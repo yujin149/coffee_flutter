@@ -1,0 +1,39 @@
+*{box-sizeing: border-box;}
+body{margin:0 auto;}
+.chatWrap{width: 100%;}
+.chatWrap h2{width: 100%; font-size:1.0625rem; font-weight: 700; background:var(--main-color); color:var(--white-color); display:flex; justify-content:center; align-items:center; height: 50px;}
+
+#chatWindow {height:calc(100vh - 210px);display: flex;flex-direction: column-reverse; /* 역순 정렬 */ overflow-y: auto;padding: 15px;}
+
+#inputContainer {height:160px; border-top: 1px solid var(--gray-color1); display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; width: 100%; padding:15px;}
+#inputContainer textarea{width: 100%; border: 1px solid var(--gray-color1); border-radius: 5px; font-size: 1rem; outline: none; resize: none; height:calc(100% - 50px); margin-bottom: 10px; padding:10px; box-sizing: border-box;}
+
+
+#inputContainer #sendButton {border:none; outline:none; background: var(--main-color); color:var(--white-color); cursor:pointer; border-radius: 5px; font-size:1rem;display: flex; justify-content: center; align-items: center; width: 100%; height: 40px;}
+
+.message {
+    display: flex;
+    margin: 10px 0;
+}
+
+.user {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+.bot {
+    justify-content: flex-start;
+    text-align: left;
+}
+
+.message-content {
+    max-width: 60%;
+    padding: 10px;
+    border-radius: 10px;
+    line-height: 1.5;
+}
+
+.user .message-content {background:var(--mainBg-color); padding:15px; border-radius: 10px; color:var(--text-color); font-size:1rem; max-width: 65%; line-height: 1.3; white-space: pre-wrap;}
+
+.bot .message-content {background:var(--bg-color); padding:15px; border-radius: 10px; color:var(--text-color); font-size:1rem; max-width: 65%; line-height: 1.3; white-space: pre-wrap;}
+

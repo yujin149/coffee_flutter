@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/layout1}">
+<body>
+<div layout:fragment="content">
+    <div class="container contWrap">
+        <div class="titleWrap">
+            <h2 class="title">상품 문의</h2>
+        </div>
+
+        <!-- 검색 폼 -->
+        <form th:action="@{/inquiry}" method="get" class="mb-25rem contSearchWrap">
+            <div class="contSearchBox">
+                <select name="searchBy" class="form-select">
+                    <option value="title" th:selected="${searchBy == 'title'}">제목</option>
+                    <option value="content" th:selected="${searchBy == 'content'}">내용</option>
+                    <option value="writer" th:selected="${searchBy == 'writer'}">작성자</option>
+                    <option value="item" th:selected="${searchBy == 'item'}">상품</option>
+                </select>
+                <div class="inputBox">
+                    <input type="text" name="searchQuery" class="form-control"
+                           th:value="${searchQuery}" placeholder="검색어를 입력하세요">
+                </div>
+                <div class="btnWrap">
+                    <button type="submit" class="searchBtn">검색</button>
+                </div>
+            </div>
+        </form>
+
+
+        <div class="tableWrap">
+            <table class="table">
+                <colgroup>
+                    <col style="width: 8%">
+                    <col style="width: *">
+                    <col style="width: 12%">
+                    <col style="width: 12%">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th>순번</th>
+                    <th>제목</th>
+                    <th>작성자</th>
+                    <th>작성일</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="inquiry, status : ${inquiries}" th:onclick="'return checkAccess(' + ${inquiry.id} + ')'">
+                    <td th:text="${inquiries.totalElements - (inquiries.number * inquiries.size) - status.index}"></td>
+                    <td>
+                        <div class="inquiryTit">
+                            <span th:if="${inquiry.inquiryStatus != null and inquiry.inquiryStatus.name() == 'QUESTION'}" class="badge bg-warning">답변대기</span>
+                            <span th:if="${inquiry.inquiryStatus != null and inquiry.inquiryStatus.name() == 'ANSWER'}" class="badge bg-success">답변완료</span>
+                            <a th:href="@{/inquiry/view/{id}(id=${inquiry.id})}"
+                               th:onclick="'return checkAccess(' + ${inquiry.id} + ')'"
+                               th:text="${inquiry.title}"></a>
+                            <i th:if="${inquiry.secret}" class="bi bi-lock-fill text-secondary ms-1"></i>
+                        </div>
+
+                    </td>
+                    <td>
+
+                        <span th:text="${#strings.substring(inquiry.writer,0,1) + #strings.repeat('*', #strings.length(inquiry.writer)-1)}"></span>
+                        (<span th:text="${#strings.length(inquiry.writerId) <= 4 ? inquiry.writerId : #strings.substring(inquiry.writerId,0,4) + #strings.repeat('*', #strings.length(inquiry.writerId)-4)}"></span>)
+                    </td>
+                    <td th:text="${#temporals.format(inquiry.regTime, 'yyyy-MM-dd')}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 페이징 -->
+        <div th:if="${inquiries.totalElements > 0}" class="pagination justify-content-center mt-25rem">
+            <ul class="pagination">
+                <li class="page-item page-arrow page-prev01" th:classappend="${inquiries.number == 0}?'disabled':''">
+                    <a class="page-link" th:href="@{/inquiry(page=0, searchBy=${searchBy}, searchQuery=${searchQuery})}">
+                        맨 처음 페이지
+                    </a>
+                </li>
+                <li class="page-item page-arrow page-prev02" th:classappend="${inquiries.number == 0}?'disabled':''">
+                    <a class="page-link" th:href="@{/inquiry(page=${inquiries.number - 1}, searchBy=${searchBy}, searchQuery=${searchQuery})}"> 이전 페이지
+                    </a>
+                </li>
+                <li class="page-item page-num"
+                    th:each="page : ${#numbers.sequence(start, end)}"
+                    th:classappend="${page == inquiries.number + 1}?'active':''">
+                    <a class="page-link" th:href="@{/inquiry(page=${page - 1}, searchBy=${searchBy}, searchQuery=${searchQuery})}" th:text="${page}"></a>
+                </li>
+                <li class="page-item page-arrow page-next02" th:classappend="${inquiries.number + 1 >= inquiries.totalPages}?'disabled':''">
+                    <a class="page-link" th:href="@{/inquiry(page=${inquiries.number + 1}, searchBy=${searchBy}, searchQuery=${searchQuery})}">다음 페이지                    </a>
+                </li>
+                <li class="page-item page-arrow page-next01" th:classappend="${inquiries.number + 1 >= inquiries.totalPages}?'disabled':''">
+                    <a class="page-link" th:href="@{/inquiry(page=${inquiries.totalPages - 1}, searchBy=${searchBy}, searchQuery=${searchQuery})}">맨 뒤 페이지
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="text-end btnWrap">
+            <a th:href="@{/inquiry/write}" class="btn writeBtn" sec:authorize="isAuthenticated()">문의하기</a>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        function checkAccess(inquiryId) {
+            // 서버에 접근 권한 확인 요청
+            fetch('/inquiry/checkAccess/' + inquiryId)
+                .then(response => response.json())
+                .then(hasAccess => {
+                    if (hasAccess) {
+                        window.location.href = '/inquiry/view/' + inquiryId;
+                    } else {
+                        alert('비밀글입니다. 로그인 후 작성자와 관리자만 볼 수 있습니다.');
+                    }
+                });
+            return false;
+        }
+    </script>
+</th:block>
+
+<th:block layout:fragment="css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+
+</th:block>
+
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/layout1}">
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        // 페이지 관련 전역 변수 선언
+        let page = 1; // 현재 페이지 번호
+        let loading = false; // 데이터 로딩 중 여부
+        let keyword = ''; // 검색 키워드
+        let hasMoreData = true; // 추가 데이터 존재 여부
+        let lastScrollTop = 0; // 마지막 스크롤 위치
+
+        $(document).ready(function(){
+            // 검색 버튼 클릭 이벤트
+            $("#searchBtn").click(function() {
+                keyword = $("#searchQuery").val();
+                page = 1; // 페이지 초기화
+                hasMoreData = true; // 데이터 존재 여부 초기화
+                $("#ongoing-gallery-container").empty(); // 기존 데이터 삭제
+                $("#ended-gallery-container").empty();
+                $("#no-data").hide();
+                loadGalleries(); // 갤러리 데이터 로드
+            });
+
+            // 초기 화면 설정
+            $("#ongoing-container").hide();
+            $("#ended-container").hide();
+            $("#no-data").hide();
+
+            // 스크롤 이벤트 리스너 등록 (무한 스크롤 구현)
+            $(window).on('scroll', handleScroll);
+
+            // 초기 데이터 로딩
+            loadGalleries();
+        });
+
+        // 스크롤 이벤트 처리 함수
+        function handleScroll() {
+            const scrollTop = $(window).scrollTop(); // 현재 스크롤 위치
+            const windowHeight = $(window).height(); // 브라우저 창 높이
+            const documentHeight = $(document).height(); // 문서 전체 높이
+
+            // 스크롤 방향 확인 (아래로 스크롤 중인지)
+            const scrollDown = scrollTop > lastScrollTop;
+            lastScrollTop = scrollTop;
+
+            // 페이지 하단에 도달하면 추가 데이터 로드
+            if (scrollDown && !loading && hasMoreData) {
+                if (scrollTop + windowHeight >= documentHeight - 100) {  // 100px 전에 데이터를 로드
+                    loadGalleries();
+                }
+            }
+        }
+
+        // 갤러리 데이터 로드 함수
+        function loadGalleries() {
+            if (loading || !hasMoreData) return;
+            loading = true;
+            $("#loading").show();
+
+            // AJAX를 통한 갤러리 데이터 요청
+            $.ajax({
+                url: '/gallery/list',
+                type: 'GET',
+                data: {
+                    page: page,
+                    keyword: keyword,
+                    searchType: $("#searchType").val()
+                },
+                success: function(data) {
+                    if (data && data.length > 0) {
+                        // 진행중/종료된 이벤트 분류
+                        let ongoingEvents = data.filter(gallery => gallery.galleryStatus === 'ON');
+                        let endedEvents = data.filter(gallery => gallery.galleryStatus === 'OFF');
+
+                        // 진행중인 이벤트와 종료된 이벤트 처리
+                        // 진행중인 이벤트 표시
+                        if (ongoingEvents.length > 0) {
+                            $("#ongoing-container").show();
+                            ongoingEvents.forEach(function(gallery) {
+                                let html = createGalleryCard(gallery);
+                                $("#ongoing-gallery-container").append(html);
+                            });
+                        }
+
+                        // 종료된 이벤트 표시
+                        if (endedEvents.length > 0) {
+                            $("#ended-container").show();
+                            endedEvents.forEach(function(gallery) {
+                                let html = createGalleryCard(gallery);
+                                $("#ended-gallery-container").append(html);
+                            });
+                        }
+
+                        page++;
+                        hasMoreData = data.length === 12;  // 12개씩 데이터가 로드되면 더 이상 로드하지 않음
+                        // 한 페이지당 12개 항목, 12개 미만이면 더 이상 데이터가 없음
+                    } else {
+                        hasMoreData = false;
+                        if (page === 1) {
+                            $("#no-data").show();
+                            $("#ongoing-container").hide();
+                            $("#ended-container").hide();
+                        }
+                    }
+                },
+                error: function(err) {
+                    console.error("Error loading galleries:", err);
+                    hasMoreData = false;
+                },
+                complete: function() {
+                    loading = false;
+                    $("#loading").hide();
+                }
+            });
+        }
+
+        // 갤러리 리스트 HTML 생성 함수
+        function createGalleryCard(gallery) {
+            let statusStyle = gallery.galleryStatus === 'ON'
+                ? 'background:var(--green-color);'
+                : 'background:var(--bk-color);';
+            let statusText = gallery.galleryStatus === 'ON' ? '진행중' : '종료';
+
+            // 리스트 템플릿 반환
+            return `
+                <div class="galleryList">
+                    <a href="/gallery/${gallery.id}">
+                        <div class="list">
+                            <div class="img">
+                                <img src="${gallery.repImgUrl}" class="card-img-top" alt="${gallery.title}">
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title"><span style="${statusStyle}">${statusText}</span>${gallery.title}</h5>
+                                <!--<p class="card-text">
+                                    기간: ${gallery.startTime} ~ ${gallery.endTime}
+                                </p>-->
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            `;
+        }
+    </script>
+</th:block>
+
+<div layout:fragment="content">
+    <div class="container contWrap ">
+
+        <div class="titleWrap btnTitleWrap">
+            <h2 class="title">이벤트</h2>
+
+            <div class="btnWrap" sec:authorize="isAuthenticated() and hasRole('ADMIN')">
+                <a class="writeBtn" href="/gallery/new">이벤트 등록</a>
+            </div>
+        </div>
+
+        <!-- 검색 영역 -->
+        <div class="mb-25rem contSearchWrap">
+            <div class="contSearchBox">
+                <select class="custom-select form-select" id="searchType" >
+                    <option value="all">전체</option>
+                    <option value="title">제목</option>
+                    <option value="content">내용</option>
+                </select>
+                <div class="inputBox">
+                    <input type="text" id="searchQuery" class="form-control" placeholder="검색어를 입력해주세요">
+                </div>
+                <div class="btnWrap">
+                    <button id="searchBtn" class="searchBtn" type="button">검색</button>
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- 진행중인 이벤트 섹션 -->
+        <div id="ongoing-container">
+            <div id="ongoing-gallery-container" class="galleryWrap">
+                <!-- 진행중인 이벤트 카드들이 여기에 동적으로 추가됩니다 -->
+            </div>
+        </div>
+
+        <!-- 구분선 -->
+        <hr class="my-5">
+
+        <!-- 종료된 이벤트 섹션 -->
+        <div id="ended-container">
+            <div id="ended-gallery-container" class="galleryWrap">
+                <!-- 종료된 이벤트 카드들이 여기에 동적으로 추가됩니다 -->
+            </div>
+        </div>
+
+        <!-- 로딩 표시 -->
+        <div id="loading" class="text-center my-4" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- 데이터 없음 메시지 -->
+        <div id="no-data" class="text-center my-4" style="display: none;">
+            <p>표시할 이벤트가 없습니다.</p>
+        </div>
+    </div>
+</div>
+</html> 

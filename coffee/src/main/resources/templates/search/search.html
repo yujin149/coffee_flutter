@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layouts/layout1}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+  <link rel="stylesheet" th:href="@{/css/search.css}">
+</head>
+
+<th:block layout:fragment="script">
+  <script th:inline="none">
+
+  </script>
+</th:block>
+
+<div class="content" layout:fragment="content">
+  <div class="searchWrap">
+    <div class="titleWrap">
+      <h2 class="title">검색</h2>
+    </div>
+    <div class="searchBox">
+      <form method="get" th:action="@{/search}">
+        <input aria-label="Search" name="searchQuery" th:value="${searchQuery}" placeholder="검색어를 입력해주세요." type="search">
+        <button class="searchBtn" type="submit"></button>
+      </form>
+    </div>
+  </div>
+  <div class="resultCntWrap" >
+    <p class="cnt">총 <span th:text="${items.totalElements}"></span>개의 상품이 검색되었습니다.</p>
+  </div>
+  <div class="contWrap">
+    <ul class="searchList">
+      <li class="listItem" th:each="item : ${items.content}">
+        <a th:href="'/item/' + ${item.id}" class="text-dark">
+          <div class="imgWrap">
+            <img th:src="${item.imgUrl}" th:alt="${item.itemNm}" class="card-img-top">
+          </div>
+          <div class="card-body">
+            <h4 class="card-title">[[${item.itemNm}]]</h4>
+            <p class="card-text">[[${item.itemDetail}]]</p>
+            <h3 class="price">[[${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')}]]원</h3>
+          </div>
+        </a>
+      </li>
+    </ul>
+
+    <!--페이징-->
+    <div class="d-flex justify-content-center mt-25rem"
+         th:with="start=${(items.number/10)*10 + 1},
+                      end=${(items.totalPages == 0) ? 1 : (start + 9 < items.totalPages ? start + 9 : items.totalPages)}">
+      <ul class="pagination">
+        <li class="page-item page-arrow page-prev01" th:classappend="${items.first} ? 'disabled'">
+          <a class="page-link" th:href="@{/search(searchQuery=${searchQuery}, page=0)}">맨 처음 페이지</a>
+        </li>
+
+        <li class="page-item page-arrow page-prev02" th:classappend="${items.first} ? 'disabled'">
+          <a class="page-link" th:href="${items.first} ? '#' : @{/search(searchQuery=${searchQuery}, page=${items.number-1})}">이전 페이지</a>
+        </li>
+
+        <li class="page-item page-num" th:each="page: ${#numbers.sequence(start, end)}"
+            th:classappend="${page == items.number + 1} ? 'active'">
+          <a class="page-link" th:text="${page}" th:href="@{/search(searchQuery=${searchQuery}, page=${page - 1})}"></a>
+        </li>
+
+        <li class="page-item page-arrow page-next02" th:classappend="${items.last} ? 'disabled'">
+          <a class="page-link" th:href="${items.last} ? '#' : @{/search(searchQuery=${searchQuery}, page=${items.number + 1})}">다음 페이지</a>
+        </li>
+        <li class="page-item page-arrow page-next01" th:classappend="${items.last} ? 'disabled'">
+          <a class="page-link" th:href="@{/search(searchQuery=${searchQuery}, page=${items.totalPages - 1})}">맨 뒤 페이지</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</html>

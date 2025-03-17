@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/layout1}">
+
+<head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        /**
+         * 갤러리 게시물 삭제 함수
+         * 사용자 확인 후 AJAX를 통해 서버에 삭제 요청
+         */
+        function deleteGallery() {
+            // 삭제 확인 대화상자 표시
+            if (confirm('게시물을 삭제하시겠습니까?')) {
+                // Thymeleaf를 통해 서버에서 전달받은 갤러리 ID와 CSRF 토큰
+                var galleryId = [[${gallery.id}]];
+                var token = $("meta[name='_csrf']").attr("content");
+                var header = $("meta[name='_csrf_header']").attr("content");
+
+                // AJAX를 사용하여 서버에 삭제 요청
+                $.ajax({
+                    url: '/gallery/delete/' + galleryId,
+                    type: 'POST',
+                    beforeSend: function(xhr) {
+                        /* CSRF 토큰 설정 */
+                        xhr.setRequestHeader(header, token);
+                    },
+                    success: function(result) {
+                        if (result === 'success') {
+                            alert('삭제되었습니다.');
+                            window.location.href = '/gallery';
+                        } else {
+                            alert('삭제 중 오류가 발생했습니다.');
+                        }
+                    },
+                    error: function() {
+                        alert('삭제 중 오류가 발생했습니다.');
+                    }
+                });
+            }
+        }
+    </script>
+</th:block>
+
+
+<div layout:fragment="content">
+    <div class="container contWrap">
+        <div class="viewTable">
+            <div class="titWrap">
+                <h3>
+                    <span th:if="${gallery.galleryStatus.name() == 'ON'}"
+                          class="badge bg-success me-2">진행중</span>
+                    <span th:if="${gallery.galleryStatus.name() == 'OFF'}"
+                          class="badge bg-danger me-2">종료</span>
+                    [[${gallery.title}]]
+
+                </h3>
+                <div class="titInfo">
+                    <div class="centerBox infoBox">
+                        <span class="tit">이벤트 기간</span>
+                        <div class="text-muted">
+                            <span th:text="${#temporals.format(gallery.startTime, 'yyyy-MM-dd')}"></span> ~
+                            <span th:text="${#temporals.format(gallery.endTime, 'yyyy-MM-dd')}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="viewContBox galleryViewContBox">
+                <p th:text="${gallery.content}"></p>
+
+                <div class="mb-4 galleryImgWrap" th:if="${not #lists.isEmpty(gallery.galleryImgDtoList)}">
+                    <div th:each="galleryImg : ${gallery.galleryImgDtoList}" class="mb-3">
+                        <img th:if="${galleryImg.imgUrl != null and !galleryImg.imgUrl.isEmpty()}"
+                             th:src="${galleryImg.imgUrl}"
+                             class="img-fluid"
+                             th:alt="${gallery.title + ' 이미지'}">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 이전글/다음글 -->
+        <div class="pagePreview mt-25rem">
+            <div class="prevPage pageList">
+                <th:block th:if="${prevGallery != null}">
+                    <div class="list">
+                        <span class="tit">이전글</span>
+                        <a th:href="@{/gallery/{id}(id=${prevGallery.id})}">
+                            [[${prevGallery.title}]]
+                        </a>
+                    </div>
+                </th:block>
+                <th:block th:unless="${prevGallery != null}">
+                    <div class="list">
+                        <span class="tit">이전글</span>
+                        <button disabled>이전글이 없습니다.</button>
+                    </div>
+                </th:block>
+            </div>
+            <div class="nextPage pageList">
+                <th:block th:if="${nextGallery != null}">
+                    <div class="list">
+                        <span class="tit">다음글</span>
+                        <a th:href="@{/gallery/{id}(id=${nextGallery.id})}">
+                            [[${nextGallery.title}]] <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </div>
+                </th:block>
+                <th:block th:unless="${nextGallery != null}">
+                    <div class="list">
+                        <span class="tit">다음글</span>
+                        <button disabled>다음글이 없습니다.</button>
+                    </div>
+                </th:block>
+            </div>
+        </div>
+
+
+        <!-- 버튼 영역 -->
+        <div class="btnWrap btnWrap02 mt-25rem">
+            <div sec:authorize="hasRole('ADMIN')" class="leftBox">
+                <a th:href="@{'/gallery/galleryModify/' + ${gallery.id}}" class="btn saveBtn">
+                    수정
+                </a>
+                <button type="button" class="btn deleteBtn" onclick="deleteGallery()">
+                    삭제
+                </button>
+            </div>
+            <div class="rightBox">
+                <a th:href="@{/gallery}" class="btn bkLineBtn">
+                    목록
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+</div>
+</html> 

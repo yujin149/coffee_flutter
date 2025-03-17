@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>COFFEE</title>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+<body>
+
+<div th:fragment="header">
+    <header class="headerWrap">
+        <div class="topMenu">
+            <ul class="auto">
+                <!--로그인이 되어 있지 않을 경우 화면에 표현 -->
+                <li sec:authorize="isAnonymous()">
+                    <a href="/members/login">로그인</a>
+                </li>
+                <li sec:authorize="isAnonymous()">
+                    <a href="/members/new">회원가입</a>
+                </li>
+                <li sec:authorize="isAuthenticated()">
+                    <span th:text="${#authentication.name} + ' 님'"></span>
+                </li>
+                <li sec:authorize="isAuthenticated()"><a href="/members/logout">로그아웃</a></li>
+                <li sec:authorize="isAuthenticated()">
+                    <a href="/mypage">마이페이지</a>
+                </li>
+                <li sec:authorize="isAuthenticated()">
+                    <a href="/mypage?section=cart">장바구니</a>
+                </li>
+            </ul>
+        </div>
+        <div class="auto logoWrap">
+            <h1 class="logoArea"><a class="logo" href="/"><img alt="COFFEE" th:src="@{/images/logo.png}"></a></h1>
+
+            <nav class="navWrap">
+                <ul class="depth1">
+                    <li sec:authorize="hasAnyAuthority('ROLE_ADMIN')">
+                        <a href="#">상품 관리</a>
+                        <ul class="depth2">
+                            <li><a href="/admin/item/new">상품 등록</a></li>
+                            <li><a href="/admin/items">상품 관리</a></li>
+                            <li><a href="/admin/orders">주문 확인</a></li>
+                            <li><a href="/admin/stats">주문 통계</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#">메뉴</a>
+                        <ul class="depth2">
+                            <li><a href="/all">전체 메뉴</a></li>
+                            <li><a href="/coffee">커피</a></li>
+                            <li><a href="/bean">원두</a></li>
+                            <li><a href="/desert">디저트</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="/store">매장안내</a>
+                    </li>
+                    <li>
+                        <a href="#">커뮤니티</a>
+                        <ul class="depth2">
+                            <li><a href="/board">공지사항</a></li>
+                            <li><a href="/gallery">이벤트</a></li>
+                            <li><a href="/inquiry">문의하기</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+
+            <form method="get" th:action="@{/search}">
+                <div class="searchBox">
+                    <input aria-label="Search" name="searchQuery" placeholder="검색어를 입력해주세요." type="search">
+                    <button type="submit" class="searchBtn"></button>
+                </div>
+            </form>
+        </div>
+    </header>
+
+</div>
+</body>
+</html>

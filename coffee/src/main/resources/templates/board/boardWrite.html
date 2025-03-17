@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<div layout:fragment="content">
+    <div class="container contWrap">
+        <div class="titleWrap">
+            <h2 class="title">게시글 작성</h2>
+        </div>
+
+        <form th:action="@{/board/new}" th:object="${boardFormDto}" method="post">
+            <div class="writeTable">
+                <div class="list list01">
+                    <label th:for="boardStatus">게시글 유형</label>
+                    <select th:field="*{boardStatus}" class="form-select">
+                        <option th:each="status : ${boardStatuses}"
+                                th:value="${status}"
+                                th:text="${status.description}"
+                                th:selected="${status == T(com.shop.constant.BoardStatus).GENERAL}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="list list01">
+                    <label th:for="title">제목</label>
+                    <input type="text" th:field="*{title}" class="form-control" placeholder="제목을 입력해주세요">
+                    <p th:if="${#fields.hasErrors('title')}" class="text-danger" th:errors="*{title}">Incorrect data</p>
+                </div>
+
+                <div class="list list02">
+                    <textarea th:field="*{content}" class="form-control" rows="10" placeholder="내용을 입력해주세요"></textarea>
+                    <p th:if="${#fields.hasErrors('content')}" class="text-danger" th:errors="*{content}">Incorrect data</p>
+                </div>
+            </div>
+
+
+            <div class="text-center mt-25rem btnWrap">
+                <button type="button" class="btn bkLineBtn" onclick="history.back()"> 취소
+                </button>
+                <button type="submit" class="btn saveBtn">등록
+                </button>
+
+            </div>
+        </form>
+    </div>
+</div>
+</html>

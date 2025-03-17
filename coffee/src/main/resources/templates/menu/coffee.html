@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th = "http://www.thymeleaf.org"
+      xmlns:layout="http//www.ultrag.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<body>
+<div layout:fragment="content">
+
+
+  <div class="contWrap" >
+
+    <div class="titleWrap">
+      <h2 class="title">커피</h2>
+    </div>
+    <div class ="mainItemWrap">
+      <th:block th:each="item, status: ${items.getContent()}">
+        <div class = "listItem">
+          <a th:href="'/item/' + ${item.id}" class ="text-dark">
+            <div class="imgWrap">
+              <img th:src="${item.imgUrl}" class ="card-img-top" th:alt="${item.itemNm}">
+            </div>
+            <div class="card-body">
+              <h4 class="card-title">[[${item.itemNm}]]</h4>
+              <p class = "card-text">[[${item.itemDetail}]]</p>
+              <!--<h3 class = "price">[[${item.price}]]원</h3>-->
+              <!--Thymeleaf의 #numbers.formatDecimal() 함수를 사용하여 천 단위마다 쉼표를 자동으로 추가-->
+              <h3 class = "price">[[${#numbers.formatDecimal(item.price, 0, 'COMMA', 0, 'POINT')}]]원</h3>
+            </div>
+          </a>
+        </div>
+      </th:block>
+    </div>
+    <div class="d-flex justify-content-center mt-25rem"
+         th:with="start=${(items.number/10)*10 + 1},
+                      end=(${(items.totalPages == 0) ? 1 : (start + 9 < items.totalPages ? start + 9 : items.totalPages)})">
+      <ul class="pagination">
+        <li class="page-item page-arrow page-prev01" th:classappend="${items.first} ? 'disabled'">
+          <a class="page-link" th:href="@{${currentUrl}(page=0)}">맨 처음 페이지</a>
+        </li>
+
+        <li class="page-item page-arrow page-prev02" th:classappend="${items.first} ? 'disabled'">
+          <a class="page-link" th:href="${items.first} ? '#' : @{${currentUrl}(page=${items.number-1})}">이전 페이지</a>
+        </li>
+
+        <li class="page-item page-num" th:each="page: ${#numbers.sequence(start, end)}"
+            th:classappend="${page == items.number + 1} ? 'active'">
+          <a class="page-link" th:text="${page}" th:href="@{${currentUrl}(page=${page - 1})}"></a>
+        </li>
+
+        <li class="page-item page-arrow page-next02" th:classappend="${items.last} ? 'disabled'">
+          <a class="page-link" th:href="${items.last} ? '#' : @{${currentUrl}(page=${items.number + 1})}">다음 페이지</a>
+        </li>
+        <li class="page-item page-arrow page-next01" th:classappend="${items.last} ? 'disabled'">
+          <a class="page-link" th:href="@{${currentUrl}(page=${items.totalPages - 1})}">맨 뒤 페이지</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  5
+</div>

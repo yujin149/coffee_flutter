@@ -1,0 +1,102 @@
+/*로그인*/
+.loginWrap{width:420px;}
+.loginWrap .form-group{margin-bottom:10px; position:relative;}
+.loginWrap .form-group input{height:50px; border-radius: 10px; border:1px solid var(--gray-color1);padding-left:50px;}
+.loginWrap .form-group label{ width:50px; height:50px; position:absolute; top:0; left:0; cursor: pointer;}
+.loginWrap .form-group .blind{font-size:0; letter-spacing: -9999px; display: block; width:50px; height:50px;}
+.loginWrap .form-group .blind.userid{background: url("../images/header_my.png") no-repeat center; background-size:19px;}
+.loginWrap .form-group .blind.password{background: url("../images/login_pw.png") no-repeat center; background-size: 18px;}
+
+.loginWrap .loginError{color:var(--main-color); font-size:0.875rem;}
+
+.loginWrap .loginFindWrap{margin:15px 0 2.25rem; display: flex; justify-content: space-between; align-items: center;}
+.loginWrap .loginFindWrap li a{font-size:1rem; color:var(--small-color);}
+.loginWrap .loginFindWrap li a:hover{color:var(--bk-color);}
+.loginWrap .btnWrap .loginBtn{width:100%; height:50px; font-weight:500;}
+
+.loginWrap .snsLoginWrap{margin-top:2.25rem; border-top:1px solid var(--gray-color1); padding-top:2.25rem;}
+
+.loginWrap .snsLoginWrap li a{display: flex; width:100%; height:50px; border-radius: 10px; align-items: center; justify-content: center; font-size:1rem; font-weight:500; margin-bottom:15px;}
+.loginWrap .snsLoginWrap li:nth-child(1) a{background:var(--main-color) url("../images/snsIcon01.png") no-repeat; color:var(--white-color); background-size:20px; background-position: 15px center; }
+.loginWrap .snsLoginWrap li:nth-child(2) a{background: #FEE500 url("../images/snsIcon02.png") no-repeat; color:var(--bk-color); background-size:21px; background-position: 15px center; }
+.loginWrap .snsLoginWrap li:nth-child(3) a{background: #03C75A url("../images/snsIcon03.png") no-repeat; color:var(--white-color); background-size:19px; background-position: 15px center; }
+
+
+/*회원가입*/
+.joinWrap{width:420px;}
+.joinWrap .joinInput{display:flex; justify-content: space-between; align-items: flex-end; margin-bottom:2.25rem; }
+.joinWrap .joinInput h3{color:var(--bk-color); font-size:1.25rem; font-weight:700;}
+.joinWrap .joinInput .star{color:var(--small-color); font-size:1rem;}
+.joinWrap .form-group{margin-bottom:30px;}
+.joinWrap .form-group label{color:var(--bk-color); font-size:1rem; font-weight:700; margin-bottom:5px;}
+.joinWrap .form-group .star{color:var(--main-color); font-size:1rem; font-weight:700;}
+.joinWrap .form-group input{height:50px; border-radius: 10px; border:1px solid var(--gray-color1);}
+
+.joinWrap .form-group .btnList{display: flex; justify-content: space-between; align-items: center;}
+.joinWrap .form-group .btnList input{width:calc(100% - 150px);}
+.joinWrap .form-group .btnList button{width:140px; height:50px; border:1px solid var(--gray-color1); border-radius: 10px; font-size:1rem; font-weight:500; background:var(--bg-color); color:var(--text-color);}
+
+.joinWrap .form-group .btnList button:hover{background:var(--bk-color); color:var(--white-color); border-color:var(--bk-color); transition: all 0.3s;}
+
+.joinWrap .form-group .addressList{width:100%; margin-bottom:10px;}
+.joinWrap .form-group .addressList input{width:100%; padding:0 15px; outline: none;}
+.joinWrap .form-group .addressList.address01{display:flex; justify-content: space-between; align-items: center;}
+.joinWrap .form-group .addressList.address01 input:nth-child(1){width:calc(100% - 150px);}
+.joinWrap .form-group .addressList.address01 input:nth-child(2){width:140px;width:140px; height:50px; border:1px solid var(--gray-color1); border-radius: 10px; font-size:1rem; font-weight:500; background:var(--bg-color); color:var(--text-color);}
+.joinWrap .form-group .addressList.address01 input:nth-child(2):hover{background:var(--bk-color); color:var(--white-color); border-color:var(--bk-color); transition: all 0.3s;}
+.joinWrap .form-group .addressList.address02 input{background:var(--bg-color); color:var(--text-color);}
+.joinWrap .form-group .addressList.address03{display:flex; justify-content: space-between; align-items: center;}
+.joinWrap .form-group .addressList.address03 input:first-child{width:calc(100% - 150px);}
+.joinWrap .form-group .addressList.address03 input:last-child{background:var(--bg-color); color:var(--text-color);width:140px;}
+.joinWrap .fieldError{font-size:0.875rem; color:var(--main-color); margin-top:5px;}
+
+.joinWrap .btnWrap{margin-top:2.25rem;}
+.joinWrap .btnWrap .saveBtn{width:100%; height:50px; font-weight:500;}
+
+
+/*아이디 비밀번호 찾기*/
+.findIdWrap{width:420px;}
+.findIdWrap .findTit{margin-bottom:2.25rem;}
+.findIdWrap .findTit .title{font-size:1.5rem; font-weight:700; color:var(--bk-color); text-align: center;}
+
+.findIdWrap .findIdInput{border-bottom:1px solid var(--gray-color1); padding-bottom:2.25rem; margin-bottom:2.25rem;}
+
+.findIdWrap .findIdInput .form-group{display: flex; justify-content: space-between; align-items: center;}
+.findIdWrap .findIdInput .form-group input{height:50px; width:calc(100% - 150px); border:1px solid var(--gray-color1); border-radius: 10px;}
+.findIdWrap .findIdInput .form-group button{height:50px; width:140px; border:1px solid var(--gray-color1); border-radius: 10px; font-size:1rem; font-weight:500; background:var(--bg-color); color:var(--text-color);}
+.findIdWrap .findIdInput .form-group button:hover{background:var(--bk-color); color:var(--white-color); border-color:var(--bk-color); transition: all 0.3s;}
+.findIdWrap .findIdInput span{font-size:0.875rem; color:var(--main-color); margin-top:5px; display: block;}
+
+.findIdWrap .findPwInput label{font-size:1rem; font-weight:700; color:var(--bk-color); margin-bottom:5px;}
+.findIdWrap .findPwInput input{height:50px; width:100%; border:1px solid var(--gray-color1); border-radius: 10px; padding:0 15px; outline: none;}
+.findIdWrap .findPwInput .form-group{margin-bottom:30px;}
+
+.findIdWrap .findPwInput .list{display: flex; justify-content: space-between; align-items: center;}
+.findIdWrap .findPwInput .list input{width:calc(100% - 150px);}
+.findIdWrap .findPwInput .list button{height:50px; width:140px; border:1px solid var(--gray-color1); border-radius: 10px; font-size:1rem; font-weight:500; background:var(--bg-color); color:var(--text-color);}
+.findIdWrap .findPwInput .list button:hover{background:var(--bk-color); color:var(--white-color); border-color:var(--bk-color); transition: all 0.3s;}
+
+.findIdWrap .findPwInput .fieldError{font-size:0.875rem; color:var(--main-color); margin-top:5px;}
+
+.findIdWrap .btnWrap{margin:2.25rem 0; width:100%; padding-bottom:2.25rem; border-bottom:1px solid var(--gray-color1);}
+.findIdWrap .btnWrap .changePwBtn{width:100%; height:50px; font-weight:500; background:var(--bk-color); color:var(--white-color); }
+
+.findIdWrap .joinBtnWrap{width:100%;}
+.findIdWrap .joinBtnWrap .loginBtn{width:100%; height:50px; font-weight:500; background:var(--main-color); color:var(--white-color); border-radius: 10px; outline: none; border:none;}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

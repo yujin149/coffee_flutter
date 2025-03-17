@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layouts/layout1}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+</head>
+<body>
+<div layout:fragment="content">
+  <div class="container contWrap inquiryWrap">
+
+    <div class="viewTable">
+      <div class="titWrap">
+        <h3>
+          <span class="badge bg-warning" th:if="${inquiry.inquiryStatus.name() == 'QUESTION'}">답변대기</span>
+          <span class="badge bg-success"
+                th:if="${inquiry.inquiryStatus.name() == 'ANSWER'}">답변완료</span>
+          [[${inquiry.title}]]
+        </h3>
+        <div class="titInfo">
+          <div class="leftBox infoBox">
+            <span class="tit">작성자</span>
+            <span class="writer">[[${inquiry.writer.substring(0,1) + #strings.repeat('*', #strings.length(inquiry.writer)-1)}]]
+                          ([[${inquiry.writerId.substring(0,4) + #strings.repeat('*', #strings.length(inquiry.writerId)-4)}]])</span>
+          </div>
+          <div class="rightBox infoBox">
+            <span class="tit">작성일</span>
+            <span class="date">[[${#temporals.format(inquiry.regTime, 'yyyy-MM-dd HH:mm')}]]</span>
+          </div>
+        </div>
+        <div class="itemInfo">
+            <img th:if="${itemImg != null}" 
+                 th:src="${itemImg.imgUrl}" 
+                 th:alt="${inquiry.item.itemNm}"
+                 class="item-thumb">
+            <img th:unless="${inquiry.item != null and itemImg != null}"
+                 src="/images/no-image.png" 
+                 alt="상품 이미지 없음"
+                 class="item-thumb">
+            <div class="itemText">
+                <span class="itemName" th:text="${inquiry.item != null ? inquiry.item.itemNm : '삭제된 상품'}">상품명</span>
+                <span class="itemPrice" th:if="${inquiry.item != null}" 
+                      th:text="${#numbers.formatDecimal(inquiry.item.price, 0, 'COMMA', 0, 'POINT') + '원'}">
+                      가격
+                </span>
+            </div>
+
+            <div class="moveItem">
+                <a th:if="${inquiry.item != null}" 
+                   th:href="@{'/item/' + ${inquiry.item.id}}" 
+                   target="_blank" 
+                   class="itemInfoBtn">상품 상세보기</a>
+            </div>
+        </div>
+      </div>
+
+      <div class="viewContBox">
+        <p th:text="${inquiry.content}"></p>
+      </div>
+
+      <div class="inquiryImgWrap">
+        <!-- 이미지 표시 영역 -->
+        <div class="inquiry-images" th:if="${not #lists.isEmpty(inquiryImages)}">
+          <div class="image-gallery">
+            <div class="inquiry-image-item" th:each="img : ${inquiryImages}">
+              <img class="img-fluid rounded" 
+                   th:src="${img.imgUrl}"
+                   th:alt="첨부이미지"
+                   onclick="openModal(this)"
+                   style="cursor: pointer;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- 답변 표시 영역 -->
+      <div class="answer-section" th:if="${answer != null}">
+        <h5>[답변]</h5>
+        <div class="answer-content" id="answerContent">[[${answer.content}]]</div>
+        <!-- 답변 수정 폼 -->
+        <div id="answerEditForm" style="display: none;">
+          <textarea class="form-control" id="editAnswerContent" rows="5"></textarea>
+          <button class="saveBtn" th:onclick="'submitAnswerEdit(' + ${answer.id} + ')'">수정 완료
+          </button>
+        </div>
+        <div class="answer-info">
+          <!--                    <small class="text-muted">-->
+          <!--                        답변일: [[${#temporals.format(answer.regTime, 'yyyy-MM-dd HH:mm')}]]-->
+          <!--                    </small>-->
+          <div class="answer-actions subBtnWrap" sec:authorize="hasRole('ADMIN')">
+            <button class="updateBtn" id="editButton" onclick="toggleAnswerEdit()">답변 수정
+            </button>
+            <form method="post"
+                  th:action="@{'/inquiry/answer/delete/' + ${answer.id}}">
+              <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+              <button class="deleteBtn" type="submit">답변 삭제</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- 관리자용 답변 입력 폼 -->
+      <div class="answer-form" sec:authorize="hasRole('ADMIN')"
+           th:if="${answer == null}">
+        <form method="post" th:action="@{/inquiry/answer/{id}(id=${inquiry.id})}">
+          <div class="form-group">
+                        <textarea class="form-control" id="answerContent"
+                                  name="content" required rows="5"></textarea>
+          </div>
+          <div class="subBtnWrap">
+            <button class="btn subSaveBtn" type="submit">답변등록</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="btnWrap btnWrap02 mt-25rem">
+        <div class="leftBox">
+          <!-- 작성자와 로그인 사용자가 동일하거나 관리자인 경우에만 수정/삭제 가능 -->
+          <th:block th:if="${member != null && (
+                    (member.userid == inquiry.writerId && member.name == inquiry.writer) ||
+                    member.role.name() == 'ADMIN'
+                )}">
+            <a class="btn saveBtn"
+               th:href="@{/inquiry/update/{id}(id=${inquiry.id})}">수정</a>
+            <form method="post"
+                  style="display: inline;" th:action="@{/inquiry/delete/{id}(id=${inquiry.id})}">
+              <button class="btn deleteBtn" onclick="return confirm('정말 삭제하시겠습니까?')"
+                      type="submit">삭제
+              </button>
+            </form>
+          </th:block>
+        </div>
+        <div class="rightBox">
+          <a class="btn bkLineBtn" th:href="@{/inquiry}">목록</a>
+        </div>
+      </div>
+    </div>
+
+    <!--이미지 원본보기 팝업-->
+    <div class="imgModal" id="imgModal">
+      <div class="modal-content">
+        <img id="modalImg" src="" alt="원본 이미지">
+        <span class="closeBtn" onclick="closeModal()"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    // 답변 수정 토글 함수
+    function toggleAnswerEdit() {
+      const answerContent = document.getElementById('answerContent');
+      const answerEditForm = document.getElementById('answerEditForm');
+      const editButton = document.getElementById('editButton');
+
+      if (answerContent.style.display !== 'none') {
+        // 수정 모드로 전환
+        answerContent.style.display = 'none';
+        answerEditForm.style.display = 'block';
+        editButton.textContent = '수정 취소';
+
+        // 기존 답변 내용을 textarea에 설정
+        const textarea = document.getElementById('editAnswerContent');
+        textarea.value = answerContent.textContent.trim(); // 여기서 trim()을 적용하거나, 필요에 따라 처리
+      } else {
+        // 보기 모드로 전환
+        answerContent.style.display = 'block';
+        answerEditForm.style.display = 'none';
+        editButton.textContent = '답변 수정';
+      }
+    }
+
+    // 답변 수정 제출
+    function submitAnswerEdit(answerId) {
+      const editedContent = document.getElementById('editAnswerContent').value;
+      if (!editedContent.trim()) {
+        alert('답변 내용을 입력해주세요.');
+        return;
+      }
+
+      const token = document.querySelector("meta[name='_csrf']").content;
+      const header = document.querySelector("meta[name='_csrf_header']").content;
+
+      fetch(`/inquiry/answer/update/${answerId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          [header]: token
+        },
+        body: `content=${encodeURIComponent(editedContent)}`
+      })
+          .then(response => {
+            if (response.ok) {
+              window.location.reload();
+            } else {
+              alert('답변 수정에 실패했습니다.');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('답변 수정 중 오류가 발생했습니다.');
+          });
+    }
+
+    // openModal 함수 수정
+    function openModal(imgElement) {
+        // DOM 요소 가져오기를 함수 호출 시점에 수행
+        const modal = document.querySelector("#imgModal");
+        const modalImg = document.querySelector("#modalImg");
+        
+        // 모달 요소가 없는 경우 처리
+        if (!modal || !modalImg) {
+            console.error("Modal elements not found", {
+                modal: modal,
+                modalImg: modalImg
+            });
+            return;
+        }
+
+        try {
+            // 이미지 로드 전에 모달 표시
+            modal.style.display = "block";
+            
+            // 이미지 소스 설정
+            modalImg.src = imgElement.src;
+            
+            // 이미지 로드 에러 처리
+            modalImg.onerror = function() {
+                console.error("Image loading failed");
+                //alert("이미지를 불러오는데 실패했습니다.");
+                modal.style.display = "none";
+            };
+        } catch (error) {
+            console.error("Error in openModal:", error);
+           // alert("모달을 여는 중 오류가 발생했습니다.");
+        }
+    }
+
+    // closeModal 함수 수정
+    function closeModal() {
+        const modal = document.querySelector("#imgModal");
+        if (modal) {
+            modal.style.display = "none";
+            const modalImg = document.querySelector("#modalImg");
+            if (modalImg) {
+                modalImg.src = ""; // 이미지 소스 초기화
+            }
+        }
+    }
+
+    // 페이지 로드 완료 후 이벤트 리스너 설정
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.querySelector("#imgModal");
+        
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                closeModal();
+            }
+        });
+
+        // 모달 외부 클릭 시 닫기
+        if (modal) {
+            modal.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+        }
+    });
+
+  </script>
+</th:block>
+
+</body>
+</html>

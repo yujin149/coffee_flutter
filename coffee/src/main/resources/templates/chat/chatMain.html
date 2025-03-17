@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultrag.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/layout1.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/chat.css}">
+</head>
+
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        $(document).ready(function () {
+            // 메시지를 전송하는 함수
+            function sendMessage(message) {
+                if (!message.trim()) return;
+
+                // 사용자 메시지 추가 (오른쪽 정렬)
+                $("#chatWindow").prepend(`
+                  <div class="message user">
+                      <div class="message-content">${message}</div>
+                  </div>
+              `);
+                var token = $("meta[name='_csrf']").attr("content");
+                var header = $("meta[name='_csrf_header']").attr("content");
+
+                $.ajax({
+                    url: "/chat",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({message: message}),
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader(header, token);
+                    },
+                    success: function (response) {
+                        $("#chatWindow").prepend(`
+                          <div class="message bot">
+                              <div class="message-content">${response.response}</div>
+                          </div>
+                      `);
+                    },
+                    error: function () {
+                        $("#chatWindow").prepend(`
+                          <div class="message bot">
+                              <div class="message-content">오류가 발생했습니다. 다시 시도해주세요.</div>
+                          </div>
+                      `);
+                    }
+                });
+                $("#messageInput").val('');
+            }
+
+            // 버튼 클릭 시 메시지 전송
+            $("#sendButton").click(function () {
+                const message = $("#messageInput").val();
+                sendMessage(message);
+            });
+
+            // Enter 키를 눌렀을 때 메시지 전송
+            $("#messageInput").keypress(function (e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    var message = $("#messageInput").val();
+                    sendMessage(message);
+                }
+            });
+        });
+    </script>
+</th:block>
+<div layout:fragment="content">
+    <div class="chatWrap">
+        <h2>Ai Chatbot</h2>
+        <div id="chatWindow"></div>
+        <div id="inputContainer">
+            <textarea id="messageInput" placeholder="질문을 입력하세요"></textarea>
+            <button id="sendButton">전송</button>
+        </div>
+    </div>
+</div>
+</html>

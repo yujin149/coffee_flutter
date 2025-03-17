@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layouts/layout1}"
+      xmlns:layout="http://www.ultrag.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <script src="/js/order.js"></script>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container contWrap ordersWrap">
+        <div class="titleWrap">
+            <h2 class="title">주문 상세 내역</h2>
+            <p class="cancelTxt">
+                <th:block th:if="${order.orderStatus == T(com.shop.constant.OrderStatus).CANCEL}">
+                    <span>(취소 완료)</span>
+                </th:block>
+            </p>
+        </div>
+
+        <div class="order-container">
+            <h3 class="order-title">주문자 정보</h3>
+
+            <div class="order-section">
+                <p class="order-section-title">ID</p>
+                <p class="order-section-content" th:text="${order.member.userid}"></p>
+            </div>
+
+            <div class="order-section">
+                <p class="order-section-title">이름</p>
+                <p class="order-section-content" th:text="${order.member.name}"></p>
+            </div>
+
+            <div class="order-section">
+                <p class="order-section-title">전화번호</p>
+                <p class="order-section-content" th:text="${order.member.tel}"></p>
+            </div>
+
+            <div class="order-section">
+                <p class="order-section-title">우편번호</p>
+                <p class="order-section-content" th:text="${order.member.postcode}"></p>
+            </div>
+
+            <div class="order-section">
+                <p class="order-section-title">주소</p>
+                <p class="order-section-content" th:text="${order.member.address}"></p>
+            </div>
+
+            <div class="order-section">
+                <p class="order-section-title">주문번호</p>
+                <p class="order-section-content" th:text="${order.orderId}"></p>
+            </div>
+
+            <div class="order-footer">
+                <p class="order-section-title">주문일</p>
+                <p class="order-date" th:text="${order.orderDate}"></p>
+            </div>
+        </div>
+
+        <div class="product-list">
+            <div class="product-item" th:each="item : ${order.orderItemDtoList}">
+                <div class="product-image">
+                    <img th:alt="${item.itemNm}" th:src="${item.imgUrl}"/>
+                </div>
+
+                <div class="product-info">
+                    <p th:text="${item.itemNm}"></p>
+                    <p th:text="'수량: ' + ${item.count} + '개'"></p>
+                    <p th:text="'가격: ' + ${item.orderPrice} + '원'"></p>
+                </div>
+
+                <div class="product-total-price">
+                    <p th:text="${item.count} * ${item.orderPrice} + '원'"></p>
+                </div>
+            </div>
+        </div>
+        <div class="payment-info-container">
+            <h3 class="payment-title">결제 정보</h3>
+
+            <div class="payment-item">
+                <p class="payment-label">상품 총 금액</p>
+                <p class="payment-value" th:text="(${order.usedMembership} + ${order.finalPrice}) + '원'">53,000원</p>
+            </div>
+
+            <div class="payment-item">
+                <p class="payment-label">적립금 사용 금액</p>
+                <p class="payment-value" th:text="${order.usedMembership} + '원'"></p>
+            </div>
+
+            <div class="payment-item payment-summary">
+                <p class="payment-label">최종 결제 금액</p>
+                <p class="payment-value" th:text="${order.finalPrice} + '원'"></p>
+            </div>
+        </div>
+
+        <div class="btnWrap">
+            <a class="writeBtn" th:href="@{/admin/orders}">목록으로 돌아가기</a>
+            <th:block th:if="${order.orderStatus == T(com.shop.constant.OrderStatus).CANCEL_REQUEST}">
+                <button class="writeBtn" onclick="approveCancellation(this.value)"
+                        th:value="${order.orderId}" type="button" style="margin-left:10px;">주문 취소
+                </button>
+            </th:block>
+        </div>
+
+
+
+    </div>
+</div>
+</body>
+</html>

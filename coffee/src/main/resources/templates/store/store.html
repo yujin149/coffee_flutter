@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<body>
+<div layout:fragment="content">
+    <div class="container contWrap storeWrap">
+            <div class="titleWrap">
+                <h2 class="title mb-4">매장 안내</h2>
+            </div>
+            <!-- * 카카오맵 - 지도퍼가기 -->
+            <!-- 1. 지도 노드 -->
+            <div id="daumRoughmapContainer1735199698935" class="root_daum_roughmap root_daum_roughmap_landing"></div>
+
+            <ul class="storeInfo">
+                <li>
+                    <p class="title">찾아오시는 길</p>
+                    <p class="txt">인천 부평구 경원대로 1366 스테이션타워 7층 707호</p>
+                </li>
+                <li>
+                    <p class="title">운영시간</p>
+                    <p class="txt">
+                        평일 : 09:00 ~ 22:00 (점심시간 13:20 ~ 14:30)<br>
+                        토/일요일 : 09:00 ~ 18:00
+                    </p>
+                </li>
+
+            </ul>
+    </div>
+    <!--
+         2. 설치 스크립트
+         * 지도 퍼가기 서비스를 2개 이상 넣을 경우, 설치 스크립트는 하나만 삽입합니다.
+     -->
+    <script charset="UTF-8" class="daum_roughmap_loader_script"
+            src="https://ssl.daumcdn.net/dmaps/map_js_init/roughmapLoader.js"></script>
+
+    <!-- 3. 실행 스크립트 -->
+    <script charset="UTF-8">
+        const lander = new daum.roughmap.Lander({
+            "timestamp" : "1735199698935",
+            "key" : "2mmqw"
+        }).render();
+
+
+        // DOM 변경을 위한 MutationObserver 사용
+        //MutationObserver는 특정 DOM 요소가 완전히 로드된 후 텍스트를 변경
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === "childList") {
+                    const element = document.querySelector('.roughmap_lebel_text');
+                    if (element) {
+                        element.textContent = 'THE JOEUN COFFEE'; // 텍스트 변경
+                        observer.disconnect(); // 텍스트 변경 후 observer 중지 (변화를 감지하지 않도록 설정)
+                    }
+                }
+            });
+        });
+
+        // observer 설정: 자식 노드 변경을 감지
+        const config = { childList: true, subtree: true };
+        const targetNode = document.getElementById('daumRoughmapContainer1735199698935');
+        observer.observe(targetNode, config);
+    </script>
+</div>
+
+
+</body>
+</html>

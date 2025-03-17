@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layouts/layout1}"
+      xmlns:layout="http://www.ultrag.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <script src="/js/kakaoAddress.js"></script>
+    <script src="/js/iamport.js"></script>
+    <script src="/js/order.js"></script>
+    <link rel="stylesheet" th:href="@{/css/order.css}">
+</head>
+<th:block layout:fragment="script">
+
+</th:block>
+
+
+<div layout:fragment="content">
+    <div class="contWrap">
+        <div class="titleWrap">
+            <h2 class="title">주문 통계</h2>
+        </div>
+        <div class="statsWrap">
+            <div class="leftBox">
+                <ul class="totalNum">
+                    <li class="monthBox">
+                        <div class="titWrap">
+                            <p class="title">월별 주문 금액</p>
+                            <div class="arrowWrap">
+                                <a class="prev arrow" href="#"><img alt="이전 월" th:src="@{/images/paging_prev.png}"></a>
+                                <a class="next arrow" href="#"><img alt="다음 월" th:src="@{/images/paging_prev.png}"></a>
+                            </div>
+                        </div>
+                        <div class="dateWrap">
+                            <p class="dateTxt"><span class="year" th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}"></span>년
+                                <span class="month" th:text="${#temporals.format(#temporals.createNow(), 'M')}"></span>월</p>
+                            <p class="num price">0<span class="won">원</span></p>
+                        </div>
+                    </li>
+
+                    <li class="todayBox">
+                        <div class="titWrap">
+                            <p class="title">일별 방문자 수</p>
+                            <div class="arrowWrap">
+                                <a class="prev arrow" href="#"><img alt="이전 일" th:src="@{/images/paging_prev.png}"></a>
+                                <a class="next arrow" href="#"><img alt="다음 일" th:src="@{/images/paging_prev.png}"></a>
+                            </div>
+                        </div>
+                        <div class="dateWrap">
+                            <p class="dateTxt">
+                                <span class="year" th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}"></span>년
+                                <span class="month" th:text="${#temporals.format(#temporals.createNow(), 'M')}"></span>월
+                                <span class="date" th:text="${#temporals.format(#temporals.createNow(), 'd')}"></span>일
+                            </p>
+                            <p class="num">0<span class="won">명</span></p>
+                        </div>
+                    </li>
+                    <li class="monthBox">
+                        <div class="titWrap">
+                            <p class="title">월별 방문자 수</p>
+                            <div class="arrowWrap">
+                                <a class="prev arrow" href="#"><img alt="이전 월" th:src="@{/images/paging_prev.png}"></a>
+                                <a class="next arrow" href="#"><img alt="다음 월" th:src="@{/images/paging_prev.png}"></a>
+                            </div>
+                        </div>
+                        <div class="dateWrap">
+                            <p class="dateTxt">
+                                <span class="year" th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}"></span>년
+                                <span class="month" th:text="${#temporals.format(#temporals.createNow(), 'M')}"></span>월
+                            </p>
+                            <p class="num">0<span class="won">명</span></p>
+                        </div>
+                    </li>
+                </ul>
+
+                <div class="todayPayWrap">
+                    <div class="titWrap">
+                        <p class="tit">일별 결제금액</p>
+                        <div class="dateBox">
+                            <p class="dateTxt">
+                                <span class="year" th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}"></span>년
+                                <span class="month" th:text="${#temporals.format(#temporals.createNow(), 'M')}"></span>월
+                                <span class="date" th:text="${#temporals.format(#temporals.createNow(), 'd')}"></span>일
+                            </p>
+                            <a class="prev arrow" href="#"><img alt="이전 일" th:src="@{/images/paging_prev.png}"></a>
+                            <a class="next arrow" href="#"><img alt="다음 일" th:src="@{/images/paging_prev.png}"></a>
+                        </div>
+                    </div>
+                    <div class="chartWrap">
+                        <canvas id="dailyPaymentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="rightBox">
+                <p class="tit">상품 판매 순위</p>
+                <ul class="list">
+                    <!-- 판매 순위는 JavaScript를 통해 동적으로 추가됨 -->
+                </ul>
+            </div>
+        </div>
+
+        <!--표-->
+        <div class="statsDetail">
+            <div class="titWrap">
+                <p class="tit"><span></span>일별 결제금액</p>
+                <a href="#" class="downBtn">엑셀 다운로드</a>
+            </div>
+            <div class="tableWrap">
+                <table class="table">
+                    <colgroup>
+                        <col style="width:80px">
+                        <col style="width:80px">
+                        <col style="width:100px">
+                        <col style="width:400px">
+                        <col style="width:80px">
+                        <col style="width:120px">
+                        <col style="width:120px">
+                        <col style="width:160px">
+                        <col style="width:400px">
+                        <col style="width:180px">
+                    </colgroup>
+
+                    <thead>
+                    <tr>
+                        <th>번호</th>
+                        <th>상품번호</th>
+                        <th colspan="2">상품명</th>
+                        <th>수량</th>
+                        <th>총 금액</th>
+                        <th>주문자 성함</th>
+                        <th>전화번호</th>
+                        <th>주소</th>
+                        <th>주문일</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <!-- 페이징 -->
+            <div class="paging">
+                <ul class="pagination">
+                    <!-- 페이징은 JavaScript를 통해 동적으로 생성됨 -->
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>
+</html>

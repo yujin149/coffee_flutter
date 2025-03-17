@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultrag.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <script src="/js/mypageRecentItem.js"></script>
+  <script src="/js/kakaoAddress.js"></script>
+  <script src="/js/mypageUpdate.js"></script>
+  <script src="/js/member.js"></script>
+  <script src="/js/mypagePassword.js"></script>
+  <script src="/js/cart.js"></script>
+  <script src="/js/order.js"></script>
+  <link th:href="@{/css/mypage.css}" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/cartList.css}">
+
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+
+<th:block layout:fragment="script">
+  <script th:inline="none">
+    //메뉴 클릭 시 active
+    $(document).ready(function () {
+      $(".menu-item > a").click(function () {
+        $(".menu-item").removeClass("active");
+        $(".menu-item .submenu li a span").removeClass("active");
+        $(this).parents(".menu-item").addClass("active");
+        $(this).parents(".menu-item").find(".submenu li:nth-child(1) a span").addClass("active");
+      });
+
+      $(".menu-item .submenu li a span").click(function () {
+        $(".menu-item").removeClass("active");
+        $(".menu-item .submenu li a span").removeClass("active");
+        $(this).addClass("active");
+        $(this).parents(".menu-item").addClass("active");
+      });
+    });
+
+    $(document).ready(function () {
+      // URL 파라미터 확인
+      const urlParams = new URLSearchParams(window.location.search);
+      const section = urlParams.get('section');
+
+      if (section === 'cart') {
+        // 장바구니 메뉴 활성화
+        $(".menu-item").removeClass("active");
+        $(".menu-item:has(a span[data-url='/cart'])").addClass("active");
+        // 장바구니 페이지 로드
+        loadCartPage();
+      } else if (section === 'orders') {  // 주문 내역 섹션 처리 추가
+        // 주문 내역 메뉴 활성화
+        $(".menu-item").removeClass("active");
+        $(".menu-item:has(a span[data-url='/orders'])").addClass("active");
+        // 주문 내역 페이지 로드
+        loadOrderPage(0);
+      } else {
+        // 기존 코드 유지
+        console.log(typeof loadRecentItems);
+        if (typeof loadRecentItems === "function") {
+          loadRecentItems();
+        } else {
+          console.error("loadRecentItems 안됨.");
+        }
+      }
+    });
+
+    // 장바구니 주문 함수 추가
+    function orderCartItems() {
+      var token = $("meta[name='_csrf']").attr("content");
+      var header = $("meta[name='_csrf_header']").attr("content");
+
+      var selectedItems = [];
+      $("input[name='cartChkBox']:checked").each(function () {
+        var cartItemId = $(this).val();
+        var count = $("#count_" + cartItemId).val();
+        var price = $("#price_" + cartItemId).data("price");
+
+        console.log("cartItemId:", cartItemId);
+        console.log("count:", count);
+        console.log("price:", price);
+
+        selectedItems.push({cartItemId: cartItemId, count: count, price: price});
+      });
+
+      console.log("selectedItems :", selectedItems);
+
+      var paramData = {cartOrderDtoList: selectedItems};
+
+      $.ajax({
+        url: "/order/total",
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(paramData),
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader(header, token);
+        },
+        success: function (response) {
+          console.log("응답 데이터:", response);
+          window.location.href = "/order/orderTotal";
+        },
+        error: function (jqXHR) {
+          console.error("에러 메시지:", jqXHR.responseText);
+          alert("오류 발생: " + jqXHR.responseText);
+        }
+      });
+    }
+
+    $(document).on('click', '.ajax-link', function(event) {
+      event.preventDefault();
+      var url = $(this).data('url');
+
+      if (url === "/mypage/update") {
+        loadUpdateForm(url);
+      }
+      if (url === "/mypage/password") {
+        loadPasswordForm(url);
+      }
+      if (url === "/mypage/recentItem") {
+        console.log('여기까지 확인');
+        const rightContent = document.getElementById("right-content");
+        if (rightContent) {
+          rightContent.innerHTML = `
+                <h3 class="contTitle">최근 본 상품</h3>
+                <div id="recent-products-container"></div>
+            `;
+          loadRecentItems();
+        }
+      }
+      if (url === "/orders") {
+        loadOrderPage(0);  // 첫 페이지 로드
+      }
+      if (url === "/cart") {
+        loadCartPage();
+      }
+    });
+
+    // 주문 내역 페이지 로드 함수
+    function loadOrderPage(page) {
+      $.ajax({
+        url: '/orders/' + page,
+        type: 'GET',
+        success: function(response) {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(response, 'text/html');
+          const contentDiv = doc.querySelector('.content');
+
+          if (contentDiv) {
+            const rightContent = document.getElementById("right-content");
+            if (rightContent) {
+              rightContent.innerHTML = contentDiv.innerHTML;
+              // order.js 재로드
+              $.getScript("/js/order.js")
+                  .done(function() {
+                    console.log("order.js loaded");
+                  })
+                  .fail(function(jqxhr, settings, exception) {
+                    console.error("Failed to load order.js");
+                  });
+            }
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('Error loading orders:', error);
+        }
+      });
+    }
+
+    // 페이징 링크 클릭 이벤트 처리
+    $(document).on('click', '.ajax-page-link', function(event) {
+      event.preventDefault();
+      const page = $(this).data('page');
+      loadOrderPage(page);
+    });
+
+    function toggleSubmenu(element) {
+      var submenu = $(element).next('.submenu');
+      submenu.toggleClass('visible');
+      $(element).toggleClass('collapsed');
+    }
+
+    // 장바구니 페이지 로드 함수
+    function loadCartPage() {
+      $.ajax({
+        url: '/cart',
+        type: 'GET',
+        success: function(response) {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(response, 'text/html');
+          const contentDiv = doc.querySelector('.content');
+
+          if (contentDiv) {
+            const rightContent = document.getElementById("right-content");
+            if (rightContent) {
+              rightContent.innerHTML = contentDiv.innerHTML;
+              // 장바구니 관련 스크립트 재로드
+              $.getScript("/js/cart.js")
+                  .done(function() {
+                    console.log("cart.js loaded");
+                    // 주문하기 버튼에 이벤트 리스너 추가
+                    $('.btnWrap button').off('click').on('click', function() {
+                      orderCartItems();
+                    });
+                  })
+                  .fail(function(jqxhr, settings, exception) {
+                    console.error("Failed to load cart.js");
+                  });
+              $.getScript("/js/iamport.js")
+                  .done(function() {
+                    console.log("iamport.js loaded");
+                  })
+                  .fail(function(jqxhr, settings, exception) {
+                    console.error("Failed to load iamport.js");
+                  });
+            }
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('Error loading cart:', error);
+        }
+      });
+    }
+
+  </script>
+</th:block>
+
+<div layout:fragment="content">
+  <div class="contWrap mypageWrap">
+    <div class="titleWrap">
+      <h2 class="title">마이페이지</h2>
+    </div>
+
+    <div class="mypageContBox">
+      <div id="left-menu">
+        <ul id="menu" class="depth1">
+          <li class="menu-item" onclick="toggleSubmenu(this)">
+            <a href="#" class="title ajax-link" data-url="/mypage/update" >개인정보 관리</a>
+            <ul class="submenu">
+              <li>
+                <a href="#"><span class="ajax-link" data-url="/mypage/update">회원정보 수정</span></a>
+              </li>
+              <li>
+                <a href="#"><span class="ajax-link" data-url="/mypage/password">비밀번호 변경</span></a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="menu-item active">
+            <a href="#"><span class="ajax-link" data-url="/mypage/recentItem">최근 본 상품</span></a>
+          </li>
+          <li class="menu-item">
+            <a href="#"><span class="ajax-link" data-url="/orders">구매 내역</span></a>
+          </li>
+          <li class="menu-item">
+            <a href="#"><span class="ajax-link" data-url="/cart">장바구니</span></a>
+          </li>
+        </ul><!--depth1-->
+      </div>
+
+      <div id="right-content">
+        <h3 class="contTitle">최근 본 상품</h3>
+        <ul id="recent-products-container">
+          <li class="product-item"></li>
+          <li class="product-item"></li>
+          <li class="product-item"></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</html>

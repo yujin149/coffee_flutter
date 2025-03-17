@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layouts/layout1}">
+
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+
+<div layout:fragment="content">
+    <div class="container contWrap">
+        <div class="viewTable">
+            <div class="titWrap">
+                <h3 th:text="${board.title}"></h3>
+                <div class="titInfo">
+                    <div class="leftBox infoBox">
+                        <p><span class="tit">작성자</span><span th:text="${board.writer}"></span></p>
+                    </div>
+                    <div class="rightBox infoBox">
+                        <p><span class="tit">작성일</span><span th:text="${#temporals.format(board.regTime, 'yyyy-MM-dd HH:mm')}"></span></p>
+                        <p><span class="tit">조회수</span><span th:text="${board.hits}"></span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="viewContBox">
+                <p class="card-text" th:text="${board.content}"></p>
+            </div>
+
+        </div>
+
+        <div class="pagePreview mt-25rem">
+            <div class="prevPage pageList">
+                <th:block th:if="${prevBoard != null}">
+                    <div class="list">
+                        <span class="tit">이전글</span>
+                        <a th:href="@{/board/{id}(id=${prevBoard.id})}" >
+                            [[${prevBoard.title}]]
+                        </a>
+                    </div>
+
+                </th:block>
+                <th:block th:unless="${prevBoard != null}">
+                    <div class="list">
+                        <span class="tit">이전글</span>
+                        <button disabled>이전글이 없습니다.</button>
+                    </div>
+                </th:block>
+            </div>
+            <div class="nextPage pageList">
+                <th:block th:if="${nextBoard != null}">
+                    <div class="list">
+                        <span class="tit">다음글</span>
+                        <a th:href="@{/board/{id}(id=${nextBoard.id})}">
+                            [[${nextBoard.title}]]
+                        </a>
+                    </div>
+
+                </th:block>
+                <th:block th:unless="${nextBoard != null}">
+                    <div class="list">
+                        <span class="tit">다음글</span>
+                        <button disabled>다음글이 없습니다.</button>
+                    </div>
+                </th:block>
+            </div>
+
+        </div>
+
+        <div class="btnWrap btnWrap02 mt-25rem">
+            <div sec:authorize="hasRole('ADMIN')" class="leftBox">
+                <a th:href="@{'/board/modify/' + ${board.id}}" class="btn saveBtn">
+                    수정
+                </a>
+                <button type="button" class="btn deleteBtn" onclick="deleteBoard()">
+                    삭제
+                </button>
+            </div>
+            <div class="rightBox">
+                <a th:href="@{/board}" class="btn bkLineBtn"> 목록
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script th:inline="javascript">
+        function deleteBoard() {
+            if (confirm('삭제하시겠습니까?')) {
+                var boardId = /*[[${board.id}]]*/ '';
+                var token = $("meta[name='_csrf']").attr("content");
+                var header = $("meta[name='_csrf_header']").attr("content");
+
+                $.ajax({
+                    url: '/board/' + boardId,
+                    type: 'DELETE',
+                    beforeSend: function(xhr) {
+                        xhr.setRequestHeader(header, token);
+                    },
+                    success: function(result) {
+                        alert('삭제되었습니다.');
+                        window.location.href = '/board';
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        alert('삭제 실패했습니다.');
+                    }
+                });
+            }
+        }
+    </script>
+</div>
+</html>

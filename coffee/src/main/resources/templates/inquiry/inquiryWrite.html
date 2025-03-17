@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layouts/layout1}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        $(document).ready(function () {
+            var errorMessage = [[${errorMessage}]];
+            if (errorMessage != null) {
+                alert(errorMessage);
+            }
+            bindDomEvent();
+
+            // 상품 선택 input 클릭 시 모달 표시
+            $('.selectItem').on('click', function() {
+                console.log('selectItem clicked');
+                $('.modal-backdrop').css('display', 'block');
+                $('.itemSearchModal').css('display', 'block');
+                // 초기 테이블 비우기
+                $('.itemSearchModal table tbody').empty();
+                $('.itemSearchModal .pagination').empty();
+            });
+
+            // 모달 닫기 버튼
+            $('.itemSearchModal .closeBtn').on('click', function(e) {
+                console.log('close button clicked');
+                e.preventDefault();
+                $('.modal-backdrop').css('display', 'none');
+                $('.itemSearchModal').css('display', 'none');
+            });
+
+            // 모달 배경 클릭 시 닫기
+            $('.modal-backdrop').on('click', function() {
+                console.log('backdrop clicked');
+                $('.modal-backdrop').css('display', 'none');
+                $('.itemSearchModal').css('display', 'none');
+            });
+
+            // 검색 기능
+            $('.itemSearchModal .searchBtn').on('click', function() {
+                var searchText = $('.itemSearchModal .searchBox input').val();
+                searchItems(searchText, 1);
+            });
+
+            // 검색 엔터 이벤트
+            $('.itemSearchModal .searchBox input').on('keypress', function(e) {
+                if (e.which == 13) {
+                    $('.itemSearchModal .searchBtn').click();
+                }
+            });
+
+            // 상품 선택 버튼 클릭
+            $(document).on('click', '.itemSearchModal .selectBtn', function(e) {
+                e.preventDefault();
+                var itemInfo = $(this).closest('tr');
+                var itemName = itemInfo.find('.info .tit').text();
+                var itemId = itemInfo.data('item-id');
+                
+                $('.selectItem').val(itemName);
+                $('input[name="itemId"]').val(itemId);
+                $('.itemSearchModal, .modal-backdrop').css('display', 'none');
+            });
+
+            function searchItems(keyword, page) {
+                $.ajax({
+                    url: '/items/search',
+                    method: 'GET',
+                    data: {
+                        keyword: keyword,
+                        page: page
+                    },
+                    success: function(response) {
+                        updateItemTable(response.items);
+                        updatePagination(response.totalPages, page);
+                    }
+                });
+            }
+
+            function updateItemTable(items) {
+                var tbody = $('.itemSearchModal table tbody');
+                tbody.empty();
+                
+                if (items.length === 0) {
+                    tbody.append(
+                        $('<tr>').append(
+                            $('<td>').attr('colspan', '3').text('검색 결과가 없습니다.')
+                        )
+                    );
+                    return;
+                }
+                
+                items.forEach(function(item) {
+                    var tr = $('<tr>').data('item-id', item.id);
+                    tr.append(
+                        $('<td>').append(
+                            $('<div>').addClass('img').append(
+                                $('<img>').attr('src', item.imgUrl).attr('alt', item.itemNm)
+                            )
+                        ),
+                        $('<td>').append(
+                            $('<div>').addClass('info').append(
+                                $('<p>').addClass('tit').text(item.itemNm),
+                                $('<p>').addClass('price').text(new Intl.NumberFormat('ko-KR').format(item.price) + '원')
+                            )
+                        ),
+                        $('<td>').append(
+                            $('<a>').addClass('selectBtn').attr('href', '#').text('선택')
+                        )
+                    );
+                    tbody.append(tr);
+                });
+            }
+
+            function updatePagination(totalPages, currentPage) {
+                var pagination = $('.itemSearchModal .pagination');
+                pagination.empty();
+                
+                if (totalPages <= 0) return;
+                
+                // 처음 페이지
+                pagination.append(createPageItem('page-prev01', 1, '맨 처음 페이지'));
+                // 이전 페이지
+                pagination.append(createPageItem('page-prev02', Math.max(1, currentPage - 1), '이전 페이지'));
+                
+                // 페이지 번호
+                var startPage = Math.max(1, currentPage - 2);
+                var endPage = Math.min(startPage + 4, totalPages);
+                
+                for (var i = startPage; i <= endPage; i++) {
+                    pagination.append(createPageItem('page-num', i, i, currentPage === i));
+                }
+                
+                // 다음 페이지
+                pagination.append(createPageItem('page-next02', Math.min(totalPages, currentPage + 1), '다음 페이지'));
+                // 마지막 페이지
+                pagination.append(createPageItem('page-next01', totalPages, '맨 뒤 페이지'));
+            }
+
+            function createPageItem(className, pageNum, text, isActive = false) {
+                var li = $('<li>').addClass('page-item');
+                if (className !== 'page-num') {
+                    li.addClass('page-arrow');
+                }
+                li.addClass(className);
+                
+                if (isActive) li.addClass('active');
+                
+                var a = $('<a>')
+                    .addClass('page-link')
+                    .attr('href', '#')
+                    .text(text)
+                    .on('click', function(e) {
+                        e.preventDefault();
+                        searchItems($('.itemSearchModal .searchBox input').val(), pageNum);
+                    });
+                    
+                return li.append(a);
+            }
+
+            function bindDomEvent() {
+                $(".imageFile.form-control").on("change", function () {
+                    var fileName = $(this).val().split("\\").pop();
+                    var fileExt = fileName.substring(fileName.lastIndexOf(".") + 1);
+                    fileExt = fileExt.toLowerCase();
+
+                    if (fileExt != "jpg" && fileExt != "jpeg" && fileExt != "gif" && fileExt != "png" && fileExt != "bmp") {
+                        alert("이미지 파일만 등록이 가능합니다.");
+                        $(this).val("");
+                    }
+                });
+            }
+        });
+    </script>
+</th:block>
+
+<div layout:fragment="content">
+    <div class="container contWrap">
+        <form enctype="multipart/form-data" method="post" role="form"
+              th:action="@{/inquiry/write}" th:object="${inquiryFormDto}">
+            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden">
+
+            <div class="titleWrap">
+                <h2 class="title">상품 문의</h2>
+            </div>
+
+            <input th:field="*{id}" type="hidden">
+            <div class="writeTable">
+                <div class="list list01">
+                    <label th:for="item">상품 선택</label>
+                    <input type="text" class="selectItem form-control" placeholder="상품을 선택해주세요." readonly>
+                    <input type="hidden" th:field="*{itemId}">
+                    <p class="fieldError text-danger" th:errors="*{itemId}" th:if="${#fields.hasErrors('itemId')}">
+                        Incorrect data</p>
+                </div>
+                <div class="list list01">
+                    <label th:for="title">제목</label>
+                    <input class="form-control" placeholder="제목을 입력해주세요" th:field="*{title}" type="text">
+                    <p class="fieldError text-danger" th:errors="*{title}" th:if="${#fields.hasErrors('title')}">
+                        Incorrect data</p>
+                </div>
+                <div class="list list02">
+                    <textarea class="form-control" placeholder="내용을 입력해주세요" rows="10" th:field="*{content}"></textarea>
+                    <p class="fieldError text-danger" th:errors="*{content}" th:if="${#fields.hasErrors('content')}">
+                        Incorrect data</p>
+                </div>
+                <div class="list list01">
+                    <label>비밀글 설정</label>
+                    <div class="radio-group">
+                        <input checked id="public" th:field="*{secret}" type="radio" value="false">
+                        <label for="public">공개글</label>
+                        <input id="private" th:field="*{secret}" type="radio" value="true">
+                        <label for="private">비밀글</label>
+                    </div>
+                </div>
+                <div class="list list03" th:each="num: ${#numbers.sequence(1, 5)}">
+                    <label>첨부파일</label>
+                    <div class="file-upload-wrapper">
+                        <div>
+                            <input accept="image/*"
+                                   class="form-control imageFile"
+                                   name="inquiryImgFile"
+                                   th:id="'inquiryImgFile' + ${num}"
+                                   type="file">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="text-center mt-25rem btnWrap">
+                <button class="btn bkLineBtn" onclick="history.back()" type="button">취소</button>
+                <button class="btn saveBtn" type="submit">등록</button>
+            </div>
+        </form>
+
+        <!--모달 배경-->
+        <div class="modal-backdrop"></div>
+
+        <!--모달-->
+        <div class="itemSearchModal modalWrap">
+            <div class="titleBox">
+                <p class="title">상품 검색</p>
+                <a class="closeBtn" href="#">닫기</a>
+            </div>
+            <div class="txtBox">
+                <div class="searchBox">
+                    <input placeholder="상품명을 입력해주세요." type="text">
+                    <button class="searchBtn">검색</button>
+                </div>
+                <div class="tableWrap">
+                    <table>
+                        <colgroup>
+                            <col style="width: 100px">
+                            <col style="width: auto">
+                            <col style="width: 100px">
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th colspan="2">상품 정보</th>
+                            <th>선택</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>
+                                <div class="img"></div>
+                            </td>
+                            <td>
+                                <div class="info">
+                                    <p class="tit">상품명</p>
+                                    <p class="price">가격</p>
+                                </div>
+                            </td>
+                            <td><a class="selectBtn" href="#">선택</a></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="paging">
+                    <ul class="pagination">
+                        <li class="page-item page-arrow page-prev01"><a href="#" class="page-link">맨 처음 페이지</a></li>
+                        <li class="page-item page-arrow page-prev02"><a href="#" class="page-link">이전 페이지</a></li>
+                        <li class="page-item page-num active"><a href="#" class="page-link">1</a></li>
+                        <li class="page-item page-num"><a href="#" class="page-link">2</a></li>
+                        <li class="page-item page-arrow page-next02"><a href="#" class="page-link">다음 페이지</a></li>
+                        <li class="page-item page-arrow page-next01"><a href="#" class="page-link">맨 뒤 페이지</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

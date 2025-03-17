@@ -1,0 +1,63 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
+
+:root{
+    /*color*/
+    --bk-color:#202020;
+    --white-color:#fff;
+    --text-color:#606060;
+    --small-color:#888;
+    --main-color:#ee3424;
+    --bg-color:#f5f5f5;
+    --gray-color1:#dcdcdc;
+    --gray-color2:#eaeaea;
+    --yellow-color:#ffb624;
+    --green-color:#6ab960;
+    --blue-color:#529bd1;
+    --mainBg-color:#fff4f3;
+
+}
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre,a, abbr, acronym, address, big, cite, code, del, dfn, em, img,
+ins, kbd, q, s, samp, small, strike, strong, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, input, legend, table, caption, tbody, tfoot,
+thead, tr, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark,audio, video,th,td {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-sizing: border-box;
+    transition:all .2s;
+    line-height:1.5;
+
+}
+
+html, body, table, input, textarea, nav, button, div, p, span,
+#main_wrap span, h1, h2, h3, h4, h6, tr, td, ol, ul, li, select, pre, a {
+    font-size:16px;
+    font-family:"Pretendard Variable","Open Sans",Malgun Gothic,"맑은 고딕",AppleGothic,Dotum,"돋움",sans-serif;
+    color:var(--text-color); font-weight: 500;
+}
+
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: inherit;
+    text-decoration: none;
+    list-style:none;
+    color:var(--text-color);
+    font-family: "pretendard",sans-serif;
+}

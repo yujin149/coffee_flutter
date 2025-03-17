@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layouts/layout1}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+  <script src="/js/order.js"></script>
+  <link rel="stylesheet" th:href="@{/css/order.css}">
+</head>
+<body>
+<div class="content" layout:fragment="content">
+  <div class="userOrderWrap">
+    <h3 class="contTitle">구매내역</h3>
+    <ul>
+      <li class="orderList" th:each="order : ${orders.content}">
+
+        <div class="orderDate">
+          <h4 th:text="'주문일자 ' + ${order.orderDate}"></h4>
+          <div class="cancelWrap">
+            <th:block th:if="${order.orderStatus == T(com.shop.constant.OrderStatus).ORDER}">
+              <button class="btn cancelBtn" onclick="requestCancelOrder(this.value)"
+                      th:value="${order.orderId}" type="button">주문 취소 요청
+              </button>
+            </th:block>
+            <th:block th:if="${order.orderStatus == T(com.shop.constant.OrderStatus).CANCEL_REQUEST}">
+              <p class="notiYet">취소 요청 중</p>
+            </th:block>
+            <th:block th:if="${order.orderStatus == T(com.shop.constant.OrderStatus).CANCEL}">
+              <p class="notiOk">취소 완료</p>
+            </th:block>
+            <!--        <th:block th:if="${order.orderStatus == T(com.shop.constant.OrderStatus).ORDER}">-->
+            <!--          <button type="button" class="btn btn-outline-secondary" th:value="${order.orderId}" onclick="cancelOrder(this.value)">주문 취소 요청</button>-->
+            <!--        </th:block>-->
+            <!--        <th:block th:unless="${order.orderStatus == T(com.shop.constant.OrderStatus).ORDER}">-->
+            <!--          <h4>(취소 완료)</h4>-->
+            <!--        </th:block>-->
+          </div>
+        </div>
+        <div class="card d-flex">
+          <div class="infoBox" th:each="orderItem : ${order.orderItemDtoList}">
+            <div class="repImgDiv">
+              <img class="rounded repImg" th:alt="${orderItem.itemNm}" th:src="${orderItem.imgUrl}">
+            </div>
+            <div class="orderInfo">
+              <p class="title" th:text="${orderItem.itemNm}"></p>
+              <p class="txt">
+                <span class="tit">가격</span>
+                <span th:text="${orderItem.orderPrice} + '원'"></span>
+              </p>
+              <p class="txt">
+                <span class="tit">수량</span>
+                <span th:text="${orderItem.count} + '개'"></span>
+              </p>
+
+            </div>
+          </div>
+        </div>
+
+      </li>
+    </ul>
+
+    <div class="d-flex justify-content-center mt-25rem"
+         th:with="start=${(orders.number/10)*10 + 1},
+                      end=(${(orders.totalPages == 0) ? 1 : (start + 9 < orders.totalPages ? start + 9 : orders.totalPages)})">
+      <ul class="pagination">
+        <li class="page-item page-arrow page-prev01" th:classappend="${orders.first} ? 'disabled'">
+          <a class="page-link ajax-page-link" href="#" th:data-page="0">맨 처음 페이지</a>
+        </li>
+
+        <li class="page-item page-arrow page-prev02" th:classappend="${orders.first} ? 'disabled'">
+          <a class="page-link ajax-page-link" href="#" th:data-page="${orders.number-1}">이전 페이지</a>
+        </li>
+
+        <li class="page-item page-num" th:each="page: ${#numbers.sequence(start, end)}"
+            th:classappend="${page == orders.number + 1} ? 'active'">
+          <a class="page-link ajax-page-link" th:text="${page}" href="#" th:data-page="${page - 1}"></a>
+        </li>
+
+        <li class="page-item page-arrow page-next02" th:classappend="${orders.last} ? 'disabled'">
+          <a class="page-link ajax-page-link" href="#" th:data-page="${orders.number + 1}">다음 페이지</a>
+        </li>
+        <li class="page-item page-arrow page-next01" th:classappend="${orders.last} ? 'disabled'">
+          <a class="page-link ajax-page-link" href="#" th:data-page="${orders.totalPages - 1}">맨 뒤 페이지</a>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

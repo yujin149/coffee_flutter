@@ -1,0 +1,15 @@
+/*상품 등록*/
+.itemFormWrap{position:relative;}
+.itemFormWrap form{border-top:1px solid var(--bk-color);}
+
+.itemSearchBox{display: flex; justify-content: space-between; align-items: center; background:var(--bg-color); padding:25px 60px; border-radius: 20px;}
+.itemSearchBox select, .itemSearchBox button{width:160px; height:45px; border-radius: 10px; margin-right:0;}
+.itemSearchBox input{width:calc(100% - 680px); height:45px; border-radius: 10px;}
+
+.crawlingBtn {position:absolute; bottom:120px; left:0px;}
+.itemFormWrap .crawlingBtn form{border-top:none;}
+.itemFormWrap .crawlingBtn button{width:160px; height:45px; border-radius: 10px; background:var(--bk-color); color:var(--white-color); outline: none; border:none;}
+    /*상품관리 - 수정*/
+.itemFormWrap .modifyWrap{display: flex; justify-content: flex-end; align-items: center;}
+.itemFormWrap .modifyWrap button:last-child{margin-left:10px;}
+

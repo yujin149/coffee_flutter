@@ -1,0 +1,146 @@
+#menu{
+    width: 300px;
+    border-top: 2px solid #222;
+}
+
+.menu-item {
+    font-size: 15px;
+    display: block;
+    justify-content: space-between;
+    align-items: center;
+    align-items: center;
+    padding: 20px 30px 20px 15px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+
+}
+.menu-item a {
+    color: #000;
+    text-decoration: none;
+    flex: 1;
+    font-size: 15px;
+}
+
+.menu-item a:hover {
+    text-decoration: underline;
+}
+
+.menu-item .arrow {
+    float: right;
+    transition: transform 0.3s;
+}
+
+.menu-item.collapsed .arrow {
+    transform: rotate(-90deg);
+}
+
+.submenu {
+    display: none;
+    margin-left: 15px;
+    margin-top: 5px;
+
+    padding-left: 10px;
+}
+
+.submenu.visible {
+    display: block;
+}
+
+.submenu li {
+    margin: 5px 0;
+    font-size: 11px;
+    padding: 6px 0 6px 15px;
+}
+
+.submenu li a {
+    list-style-type: disc;
+    text-decoration: none;
+    color: #000;
+}
+
+.submenu li a:hover {
+    text-decoration: underline;
+}
+.content {
+    display: flex; /* 플렉스 박스 사용 */
+    justify-content: space-between; /* 왼쪽과 오른쪽 간격 유지 */
+    align-items: flex-start; /* 위쪽 정렬 */
+    gap: 20px; /* 두 콘텐츠 사이 간격 추가 */
+    padding-left: 100px;
+}
+
+#left-menu {
+    flex: 0 0 300px; /* 고정된 너비 */
+}
+#right-content > div, #right-content > form {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+}
+#right-content {
+    flex: 1;
+    margin: auto;
+    padding: 20px;
+    text-align: left;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
+    max-width: 800px;
+    min-height: 400px; /* 최소 높이 지정 */
+}
+#right-content h3 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#right-content form, #right-content div {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #ffffff;
+}
+#recent-products-container {
+    display: flex;
+    gap: 10px;
+    padding-top: 10px;
+}
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+/*최근 본 상품 */
+.product-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    border-right: 1px solid #ccc;
+}
+.product-item:last-child {
+    border-right: none;
+}
+.product-item img {
+    width: 225px;
+    height: 300px;
+    object-fit: cover;
+}
+.product-item a {
+    text-decoration: none;
+    color: #000;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 5px;
+}

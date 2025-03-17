@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultrag.net.nz/thymeleaf/layout">
+
+<head>
+    <meta charset="UTF-8">
+    <title>1:1 채팅</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
+    <link th:href="@{/css/common.css}" rel="stylesheet">
+    <link th:href="@{/css/layout1.css}" rel="stylesheet">
+    <link th:href="@{/css/main.css}" rel="stylesheet">
+    <link th:href="@{/css/community.css}" rel="stylesheet">
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script th:src="@{/js/script.js}"></script>
+
+    <th:block layout:fragment="script"></th:block>
+    <th:block layout:fragment="css"></th:block>
+
+    <script th:inline="javascript">
+        var stompClient = null;
+
+        function connect() {
+            var socket = new SockJS('/counsel');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                // 관리자용 전체 메시지 구독
+                stompClient.subscribe('/topic/admin', function (message) {
+                    var messageData = JSON.parse(message.body);
+                    // 사용자가 보낸 메시지일 때만 카운트 증가 및 내용 업데이트
+                    if (messageData.username !== "관리자") {
+                        updateUnreadCount(messageData);
+                        updateLatestMessage(messageData);
+                        moveToTop(messageData.userId);
+                    }
+                });
+            });
+        }
+
+        function updateUnreadCount(message) {
+            var userId = message.userId;
+            var countElement = document.querySelector(`[data-user-id="${userId}"] .chatCount`);
+            if (countElement) {
+                var currentCount = parseInt(countElement.textContent);
+                countElement.textContent = currentCount + 1;
+            }
+        }
+
+        function updateLatestMessage(message) {
+            var userId = message.userId;
+            var messageElement = document.querySelector(`[data-user-id="${userId}"] .textWrap .text`);
+            if (messageElement) {
+                messageElement.textContent = message.message;
+                
+                // 사용자명 업데이트 (사용자명(아이디) 형식)
+                var nameElement = document.querySelector(`[data-user-id="${userId}"] .title .name`);
+                if (nameElement) {
+                    nameElement.textContent = `${message.senderName}(${message.senderId})`;
+                }
+                
+                // 날짜도 업데이트
+                var dateElement = document.querySelector(`[data-user-id="${userId}"] .title .date`);
+                if (dateElement) {
+                    var date = new Date(message.regDate);
+                    var koreanDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+                    dateElement.textContent = koreanDate.toLocaleString('ko-KR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+                }
+            }
+        }
+
+        function moveToTop(userId) {
+            var listContainer = document.querySelector('.counselListWrap');
+            var chatItem = document.querySelector(`[data-user-id="${userId}"]`);
+            
+            if (listContainer && chatItem) {
+                // 채팅방 요소를 목록에서 제거했다가
+                chatItem.remove();
+                // 목록의 맨 앞에 추가
+                listContainer.insertBefore(chatItem, listContainer.firstChild);
+                
+            }
+        }
+
+        function formatDate(dateStr) {
+            var date = new Date(dateStr);
+            var koreanDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+            return koreanDate.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+        window.onload = connect;
+    </script>
+    <style>
+        @keyframes highlight {
+            0% { background-color: rgba(255, 255, 0, 0.2); }
+            100% { background-color: transparent; }
+        }
+    </style>
+</head>
+<body>
+
+<div th:fragment="counsel">
+    <div class="counselWrap">
+        <div class="counselTitle">
+            <h3 class="title">관리자 채팅 목록</h3>
+        </div>
+        <ul class="counselListWrap">
+            <li th:each="counsel : ${counselList}" th:data-user-id="${counsel.userId}">
+                <a th:href="@{/counsel(userId=${counsel.userId})}">
+                    <p class="title">
+                        <span th:text="${counsel.senderName} + '(' + ${ counsel.senderId} + ')'" class="name">사용자명(아이디)</span>
+                        <span th:text="${#temporals.format(counsel.regDate.plusHours(9), 'yyyy-MM-dd a hh:mm')}" class="date">날짜</span>
+                    </p>
+                    <div class="textWrap">
+                        <p class="text" th:text="${counsel.message}">최근 메시지</p>
+                        <span class="chatCount" th:text="${counsel.unreadCount}">0</span>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>

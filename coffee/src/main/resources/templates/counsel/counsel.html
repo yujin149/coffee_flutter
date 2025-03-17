@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultrag.net.nz/thymeleaf/layout">
+
+<head>
+
+    <meta charset="UTF-8">
+    <title>1:1 상담</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
+    <link th:href="@{/css/common.css}" rel="stylesheet">
+    <link th:href="@{/css/layout1.css}" rel="stylesheet">
+    <link th:href="@{/css/main.css}" rel="stylesheet">
+    <link th:href="@{/css/community.css}" rel="stylesheet">
+
+    <!-- 웹소켓 관련 라이브러리 -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script th:src="@{/js/script.js}"></script>
+
+    <th:block layout:fragment="script"></th:block>
+    <th:block layout:fragment="css"></th:block>
+
+
+
+    <script th:inline="javascript">
+        // === 전역 변수 선언부 ===
+        // WebSocket 클라이언트 객체 (null로 초기화)
+        var stompClient = null;
+    
+        // URL 파라미터에서 대화 상대방의 userId를 가져옴
+        var userId = /*[[${param.userId}]]*/ 'default';
+        // 현재 사용자가 관리자인지 여부 (Spring Security의 권한 체크)
+        var isAdmin = /*[[${#authorization.expression('hasRole("ADMIN")')}]]*/ false;
+        // 현재 로그인한 사용자의 이름
+        var userName = /*[[${userName}]]*/ 'default';
+        // 현재 로그인한 사용자의 ID
+        var currentUserId = /*[[${currentUserId}]]*/ 'default';
+        // 채팅 상대방의 이름 (관리자 채팅 시 표시용)
+        var partnerName = /*[[${partnerName}]]*/ 'default';
+        // 채팅 상대방의 ID
+        var partnerId = /*[[${partnerId}]]*/ 'default';
+
+        /**
+         * WebSocket 연결을 설정하는 함수
+         * - SockJS를 사용하여 서버와 WebSocket 연결 수립
+         * - STOMP 프로토콜을 통한 메시지 송수신 설정
+         * - 연결 실패 시 자동 재연결 로직 포함
+         */
+        function connect() {
+            // SockJS를 사용하여 WebSocket 연결 생성 ('/counsel' 엔드포인트로 연결)
+            var socket = new SockJS('/counsel');
+            // STOMP 클라이언트 생성
+            stompClient = Stomp.over(socket);
+            
+            // 디버깅을 위한 STOMP 로그 설정
+            stompClient.debug = function(str) {
+                console.log(str);
+            };
+
+            // CSRF 보안 토큰 설정 (Spring Security 연동)
+            var headers = {
+                'X-CSRF-TOKEN': $("meta[name='_csrf']").attr("content")
+            };
+
+            // WebSocket 연결 시도 및 콜백 함수 설정
+            stompClient.connect(headers, 
+                // 연결 성공 시 콜백
+                function (frame) {
+                    console.log('Connected: ' + frame);
+                    
+                    // 사용자 유형에 따른 메시지 구독 설정
+                    if (isAdmin) {
+                        // 관리자는 모든 사용자의 메시지를 받을 수 있도록 관리자 채널 구독
+                        stompClient.subscribe('/topic/admin', function (message) {
+                            console.log('Admin received message:', message);
+                            showMessage(JSON.parse(message.body));
+                        });
+                    } else {
+                        // 일반 사용자는 자신의 전용 채널만 구독
+                        stompClient.subscribe('/topic/user/' + currentUserId, function (message) {
+                            console.log('User received message:', message);
+                            showMessage(JSON.parse(message.body));
+                        });
+                    }
+
+                    // 연결 성공 후 이전 채팅 내역 로드
+                    loadPreviousMessages();
+                }, 
+                // 연결 실패 시 콜백 (오류 처리 및 재연결)
+                function(error) {
+                    console.error('STOMP error:', error);
+                    if (error.headers && error.headers.message) {
+                        console.error('Error message:', error.headers.message);
+                    }
+                    // 5초 후 자동 재연결 시도
+                    setTimeout(function() {
+                        console.log('Attempting to reconnect...');
+                        connect();
+                    }, 5000);
+                }
+            );
+
+            // WebSocket 연결 종료 시 처리
+            socket.onclose = function() {
+                console.log('WebSocket connection closed');
+                // 기존 연결 해제
+                if (stompClient !== null) {
+                    stompClient.disconnect();
+                }
+                // 5초 후 재연결 시도
+                setTimeout(function() {
+                    console.log('Attempting to reconnect...');
+                    connect();
+                }, 5000);
+            };
+        }
+
+
+
+        function loadPreviousMessages() {
+            // 채팅 상대방의 ID 가져오기
+            var chatUserId = getTargetUserId();
+            console.log("Target User ID for loading messages:", chatUserId);
+            console.log("Is Admin:", isAdmin);
+            console.log("Current User ID:", currentUserId);
+
+            // 채팅 상대방의 ID가 없으면 오류 출력 후 종료
+            if (!chatUserId) {
+                console.error("No user ID available for loading messages");
+                return;
+            }
+
+            //ajax를 사용하여 서버에서 이전 채팅 내역 가져오기
+            $.ajax({
+                url: '/api/counsel/messages/' + chatUserId,
+                method: 'GET',
+                success: function(messages) {
+                    console.log("Successfully loaded messages:", messages);
+                    $('.counselCont').empty(); // 기존 메시지 삭제
+                    if (messages && messages.length > 0) {
+                        // 가져온 메시지를 화면에 표시
+                        messages.forEach(function(message) {
+                            showMessage(message);
+                        });
+                        // 스크롤을 맨 아래로 이동(최신 메세지 표시)
+                        var messageArea = document.querySelector('.counselCont');
+                        messageArea.scrollTop = messageArea.scrollHeight;
+                    } else {
+                        console.log("No messages found");
+                    }
+                },
+                error: function(error) {
+                    console.error("Failed to load messages:", error);
+                    if (error.status === 403) {
+                        console.error("Permission denied. Please check authentication.");
+                    }
+                }
+            });
+        }
+
+
+
+        function showMessage(message) {
+            var messageArea = document.querySelector('.counselCont');
+            var messageDiv = document.createElement('div');
+            
+            // 메시지 방향 설정 (본인 메시지인지 여부)
+            var isMyMessage;
+            if (isAdmin) {
+                isMyMessage = message.username === "관리자";
+            } else {
+                isMyMessage = message.senderId === currentUserId;
+            }
+            // css 클래스 설정(내 메세지는 오른쪽 myMessage, 상대방 메세지는 왼쪽 yourMessage)
+            messageDiv.className = 'messageBox ' + (isMyMessage ? 'myMessage' : 'yourMessage');
+
+            // 이름 표시 형식 설정(관리자는 관리자, 일반 사용자는 아이디와 이름 표시)
+            var displayName;
+            if (message.username === "관리자") {
+                displayName = "관리자";
+            } else {
+                displayName = `${message.senderName}(${message.senderId})`;
+            }
+
+            // 메세지 표시 형식 설정(이름과 날짜, 메세지 내용)
+            var html = `
+                <p class="name">${displayName} <span class="date">${formatDate(message.regDate)}</span></p>
+                <p class="textBox">${message.message}</p>
+            `;
+
+            // 메세지를 화면에 추가하고 스크롤 조정
+            messageDiv.innerHTML = html;
+            messageArea.appendChild(messageDiv);
+            messageArea.scrollTop = messageArea.scrollHeight;
+        }
+
+
+
+        function formatDate(dateStr) {
+
+            var date = new Date(dateStr);
+            // UTC 시간을 한국 시간으로 변환 (UTC+9)
+            var koreanDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+            // 시간을 AM/PM 형식으로 표시
+            return koreanDate.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+
+
+        // URL 파라미터에서 userId 추출
+        function getTargetUserId() {
+            if (isAdmin) {
+                // URL에서 userId 파라미터 가져오기
+                //관리자인 경우 URL 파라미터에서 대화 상대방 ID 가져오기
+                var urlParams = new URLSearchParams(window.location.search);
+                var targetUserId = urlParams.get('userId');
+                console.log("Admin target userId from URL:", targetUserId);
+                return targetUserId;
+            }
+            //일반 사용자인 경우 자신의 ID 가져오기
+            console.log("User currentUserId:", currentUserId);
+            return currentUserId;
+        }
+
+        function sendMessage() {
+            // 메세지 입력 필드 가져오기
+            var messageInput = document.getElementById('messageInput');
+            // 메세지가 비어있으면 종료 
+            if (!messageInput.value.trim()) return;
+
+            // 채팅 상대방의 ID 가져오기
+            var targetUserId = getTargetUserId(); 
+            if (!targetUserId) {
+                console.error("Target user ID is not available");
+                return;
+            }
+            //메세지 객체 생성
+            var message = {
+                username: isAdmin ? "관리자" : userName, //발신자 이름 설정(관리자 또는 일반 사용자)
+                userId: targetUserId,  // 메시지를 받을 사용자 ID (수신자 ID설정)
+                adminId: isAdmin ? currentUserId : null,   // 관리자인 경우에만 adminId 설정 (관리자가 보낼때만)
+                message: messageInput.value, //메세지 내용
+                regDate: new Date(), //메세지 발신 시간
+                senderName: isAdmin ? "관리자" : userName,  // 보내는 사람의 실제 이름
+                senderId: currentUserId,  // 보내는 사람의 ID
+                unreadCount: 1  // 새 메시지는 읽지 않은 상태(1)로 시작
+            };
+
+            console.log("Sending message:", message);  // 디버깅을 위한 로그 추가
+            
+            // WebSocket 연결이 성공적으로 이루어졌고 연결이 유지되는 경우
+            if (stompClient && stompClient.connected) {
+                stompClient.send("/app/counsel", {}, JSON.stringify(message));
+                messageInput.value = '';//입력창 비우기
+            } else {
+                console.error("WebSocket connection not established");
+                alert("채팅 연결이 끊어졌습니다. 페이지를 새로고침해주세요.");
+            }
+            return false; //폼 제출 방지
+        }
+
+
+
+        // 뒤로가기 버튼 클릭 이벤트 처리
+        // 읽지 않은 메시지 수 초기화
+        function goBack() {
+            var targetUserId = getTargetUserId();
+            // 읽지 않은 메시지 수 초기화 API 호출
+            $.ajax({
+                // 읽지 않은 메시지 수 0으로 초기화하는 API 호출
+                url: '/api/counsel/reset-unread/' + targetUserId,
+                method: 'POST',
+                success: function() {
+                    // 뒤로가기 버튼 클릭 시 메세지 목록 페이지로 이동
+                    window.location.href = '/counsel/list';
+                },
+                error: function(error) {
+                    console.error('Failed to reset unread count:', error);
+                    // 오류 발생 시 메세지 목록 페이지로 이동
+                    window.location.href = '/counsel/list';
+                }
+            });
+        }
+
+        // 페이지 로드 시 뒤로가기 버튼 표시 여부 설정
+        function initializeBackButton() {
+            // 뒤로가기 버튼 요소 찾기
+            var backIcon = document.querySelector('.backIcon');
+            if (backIcon) {
+                // 관리자인 경우 뒤로가기 버튼 표시
+                if (isAdmin) {
+                    // 뒤로가기 버튼 표시   
+                    backIcon.style.display = 'block';
+                    // 뒤로가기 버튼 클릭 시 함수 호출
+                    backIcon.addEventListener('click', goBack);
+                } else {
+                    // 뒤로가기 버튼 숨기기 (일반사용자는 뒤로가기 버튼 숨김)
+                    backIcon.style.display = 'none';
+                }
+            }
+        }
+
+        // 페이지 로드 시 채팅 연결 시도 및 뒤로가기 버튼 초기화    
+        window.onload = function() {
+            // 채팅 연결 시도   
+            connect();
+            // 뒤로가기 버튼 초기화
+            initializeBackButton();
+        };
+    </script>
+</head>
+<body>
+
+
+
+<div th:fragment="counsel">
+
+    <div class="counselWrap">
+        <div class="counselTitle">
+            <span class="backIcon">뒤로가기</span>
+            <h3 class="title" th:text="${isAdmin ? '관리자 채팅' : '1:1 상담'}">채팅</h3>
+        </div>
+
+        <div class="counselCont">
+            <!-- 메시지들이 여기에 동적으로 추가됩니다 -->
+        </div>
+
+        <div class="chatWrap">
+            <form onsubmit="return false;">
+                <textarea id="messageInput" placeholder="메세지를 입력하세요."></textarea>
+                <button type="button" onclick="sendMessage()">전송</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
