@@ -7,7 +7,7 @@ class BoardService {
   static const String baseUrl = 'http://192.168.0.37:8080/api';
 
   // 안드로이드 에뮬레이터용 서버 URL
-  static const String baseUrlEmulator = 'http://10.0.2.2:8080/api';
+  //static const String baseUrlEmulator = 'http://10.0.2.2:8080/api';
 
   // 게시글 목록 조회
   Future<Map<String, dynamic>> getBoards({
