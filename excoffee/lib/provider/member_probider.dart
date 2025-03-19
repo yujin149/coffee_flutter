@@ -7,14 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class MemberProvider extends ChangeNotifier {
-  // 로그인 정보
-  // late Member _memberInfo;
-  // // 로그인 상태
-  // bool _loginstat = false;
-  // // getter
-  // // get : getter 메소드를 정의하는 키워드
-  // Member get memberInfo => _memberInfo;
-  // bool get isLogin => _loginstat;
+
 
   Member _memberInfo = Member();
   bool _isLoggedIn = false;
@@ -28,7 +21,10 @@ class MemberProvider extends ChangeNotifier {
   // 읽기 : storage.read(key: key)
   // 쓰기 : storage.write(key: key, value: value)
   // 삭제 : storage.delete(key: key)
-
+  void setLoggedIn(bool isLoggedIn) {
+    _isLoggedIn = isLoggedIn;
+    notifyListeners(); // 상태 변경을 UI에 반영하도록 알림
+  }
 
 /// 🔐 로그인 요청
 /// 1. 요청 및 응답
@@ -38,7 +34,8 @@ class MemberProvider extends ChangeNotifier {
 /// 2. jwt 토큰을 SecureStorage 에 저장
   Future<void> login(String userid, String password) async {
 
-    const url = 'http://10.0.2.2:8080/members/api/login'; // 로그인 경로
+    //const url = 'http://10.0.2.2:8080/members/api/login'; // 로그인 경로
+    const url = 'http://192.168.0.37:8080/members/api/login'; // 로그인 경로
     final requestUrl = Uri.parse(url);
     try {
       // 로그인 요청
@@ -96,7 +93,8 @@ class MemberProvider extends ChangeNotifier {
        return;
      }
 
-     final url =  'http://10.0.2.2:8080/members/api/info'; // 사용자 정보 요청 경로
+     //final url =  'http://10.0.2.2:8080/members/api/info'; // 사용자 정보 요청 경로
+     final url =  'http://192.168.0.37:8080/members/api/info'; // 사용자 정보 요청 경로
      try {
        // 저장된 jwt 가져오기
        String? token = await storage.read(key: 'jwtToken');
@@ -120,6 +118,7 @@ class MemberProvider extends ChangeNotifier {
          // memberInfo ➡ _memberInfo 로 저장
          // provider  등록
          _memberInfo = Member.fromJson(memberInfo);
+         setLoggedIn(true);
          print(_memberInfo);
        } else {
          // HTTP 요청이 실패했을 때의 처리
@@ -162,4 +161,40 @@ class MemberProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+
+  // Future<void> socialLogin(String provider, String authCode) async {
+  //   final url = 'http://10.0.2.2:8080/api/oauth2/google';
+  //   final requestUrl = Uri.parse(url);
+  //
+  //   try {
+  //     final response = await http.post(
+  //       requestUrl,
+  //       headers: {"Content-Type": "application/json"},
+  //       body: json.encode({"authCode": authCode}),
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       final responseBody = json.decode(response.body);
+  //       final jwtToken = responseBody['token'];
+  //
+  //       if (jwtToken != null) {
+  //         // ✅ JWT 토큰 저장
+  //         await storage.write(key: 'jwtToken', value: jwtToken);
+  //         _isLoggedIn = true;
+  //         notifyListeners();
+  //
+  //         print('소셜 로그인 성공! JWT: $jwtToken');
+  //
+  //         // ✅ 사용자 정보 요청
+  //         await getMemberInfo();
+  //       } else {
+  //         print('소셜 로그인 실패: 응답에 토큰 없음');
+  //       }
+  //     } else {
+  //       print('소셜 로그인 실패: ${response.statusCode}');
+  //     }
+  //   } catch (error) {
+  //     print('소셜 로그인 요청 중 오류 발생: $error');
+  //   }
+  // }
 }

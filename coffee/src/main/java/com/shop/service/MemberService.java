@@ -132,9 +132,9 @@ public class MemberService implements UserDetailsService {
 
         //빌더패턴은 객체를 리턴한다 (검사를 하는거는 sequrity 가 한다.)
         return User.builder().username(member.getUserid())
-                .password(member.getPassword())
-                .authorities(authorities)  // 권한에 따라서 설정
-                .build();
+            .password(member.getPassword())
+            .authorities(authorities)  // 권한에 따라서 설정
+            .build();
     }
 
 
@@ -145,5 +145,22 @@ public class MemberService implements UserDetailsService {
             throw new EntityNotFoundException("Member not found");
         }
         return member;
+    }
+
+    //api 플러터 로그인용
+    public boolean login(String userid, String password) {
+        // 사용자 정보를 DB에서 조회
+        Member member = memberRepository.findByUserid(userid);
+
+        if (member == null) {
+            return false; // 사용자 정보가 없다면 로그인 실패
+        }
+
+        // 비밀번호 확인
+        if (!passwordEncoder.matches(password, member.getPassword())) {
+            return false; // 비밀번호 불일치 시 로그인 실패
+        }
+
+        return true; // 로그인 성공
     }
 }

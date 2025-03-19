@@ -6,6 +6,7 @@ import 'package:excoffee/member/memberform.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:excoffee/provider/member_probider.dart';
+import 'package:excoffee/home_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -68,7 +69,7 @@ class _MainScreenState extends State<MainScreen> {
                 children: [
                   if (!isLoggedIn) // 로그인되지 않은 경우에만 보이게
                     IconButton(
-                      icon: const Icon(Icons.app_registration),
+                      icon: const Icon(Icons.person_add),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -83,7 +84,7 @@ class _MainScreenState extends State<MainScreen> {
                         await memberProvider.logOut();
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => const MainScreen()),
+                          MaterialPageRoute(builder: (context) => const HomeScreen()),
                         );
                       } else {
                         Navigator.push(
@@ -98,7 +99,6 @@ class _MainScreenState extends State<MainScreen> {
             },
           ),
         ],
-
       ),
       body: SingleChildScrollView(
         child: Column(

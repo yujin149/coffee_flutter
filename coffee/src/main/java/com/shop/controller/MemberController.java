@@ -11,6 +11,7 @@ import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -36,7 +37,6 @@ public class MemberController {
         model.addAttribute("memberFormDto",new MemberFormDto());
         return "member/memberForm";
     }
-
 
 
     @PostMapping(value = "/new")
@@ -91,6 +91,7 @@ public class MemberController {
 
     @GetMapping(value = "/login")
     public String loginMember(){
+
         return "member/memberLoginForm";
     }
 
@@ -185,6 +186,37 @@ public class MemberController {
             return "success"; // JSON 응답으로 'success' 반환
         } else {
             return "fail"; // 인증 실패 시 'fail' 반환
+        }
+    }
+
+    @PostMapping(value = "/login")
+    public String login(@RequestParam String userid, @RequestParam String password, Model model) {
+        System.out.println("flutter userid:" + userid+ " password: " + password);
+        boolean loginSuccess = memberService.login(userid, password);
+
+        if (loginSuccess) {
+            // 로그인 성공, 홈 페이지로 리디렉션
+            return "redirect:/home"; // 로그인 후 홈으로 이동 (예시)
+        } else {
+            // 로그인 실패, 로그인 페이지로 돌아가며 에러 메시지 표시
+            model.addAttribute("loginErrorMsg", "아이디 또는 비밀번호를 확인해주세요");
+            return "member/memberLoginForm"; // 로그인 페이지로 리디렉션
+        }
+    }
+
+    @PostMapping(value = "/api/new")
+    public ResponseEntity<String> memberFormApi(@RequestBody MemberFormDto memberFormDto) {
+        System.out.println("api가 들어옴?????????????");
+        System.out.println("api가 들어옴?????????????");
+        System.out.println("api가 들어옴?????????????");
+        Member member = Member.createMember(memberFormDto,passwordEncoder,memberRepository);
+        System.out.println("member api : " + memberFormDto);
+        try {
+            memberService.saveMember(member);
+            return ResponseEntity.ok("회원가입 성공");
+        } catch (Exception e) {
+            // 예외 발생 시 400 Bad Request 응답 반환
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("회원가입 실패");
         }
     }
 

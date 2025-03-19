@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:excoffee/main_screen.dart';
 import 'package:excoffee/store/store.dart';
 import 'package:excoffee/board/board.dart';
+import 'package:excoffee/gallery/gallery.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const MainScreen(),
     const Store(),
     const Board(),
+    const Gallery(),
   ];
 
   void _onItemTapped(int index) {
@@ -30,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -43,9 +47,16 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.announcement),
             label: '공지사항',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.event),
+            label: '이벤트',
+          ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: const Color(0xFFEE3424),
+        unselectedItemColor: Color(0xFF888888),
+        selectedLabelStyle: const TextStyle(color: Color(0xFFEE3424), fontSize: 13,),
+        unselectedLabelStyle: const TextStyle(color: Color(0xFF606060), fontSize: 13,),
         onTap: _onItemTapped,
       ),
     );
