@@ -1,6 +1,5 @@
 package com.shop.entity;
 
-
 import com.shop.constant.GalleryStatus;
 import com.shop.dto.GalleryFormDto;
 import jakarta.persistence.*;
@@ -9,14 +8,15 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="gallery")
 @Getter
 @Setter
 @ToString
-
-public class Gallery extends BaseEntity{
+public class Gallery extends BaseEntity {
     @Id
     @Column(name="gallery_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -37,6 +37,9 @@ public class Gallery extends BaseEntity{
     @Enumerated(EnumType.STRING)
     private GalleryStatus galleryStatus; //갤러리 상태
 
+    @OneToMany(mappedBy = "gallery", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GalleryImg> galleryImgList = new ArrayList<>();
+
     public void updateGallery(GalleryFormDto galleryFormDto){
         this.title = galleryFormDto.getTitle();
         this.content = galleryFormDto.getContent();
@@ -44,7 +47,4 @@ public class Gallery extends BaseEntity{
         this.endTime = galleryFormDto.getEndTime();
         this.galleryStatus = galleryFormDto.getGalleryStatus();
     }
-
-    
-    
 }

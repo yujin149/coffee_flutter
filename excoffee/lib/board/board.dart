@@ -67,6 +67,7 @@ class _BoardState extends State<Board> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           '공지사항',
@@ -74,14 +75,6 @@ class _BoardState extends State<Board> {
         ),
         backgroundColor: const Color(0xFFEE3424),
         foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              Navigator.pushNamed(context, '/board/write');
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [

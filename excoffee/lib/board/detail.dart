@@ -44,6 +44,7 @@ class _BoardDetailState extends State<BoardDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           '공지사항',
