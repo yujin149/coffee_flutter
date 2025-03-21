@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import 'gallery_model.dart';
 
 class GalleryService {
-  static const String baseUrl = 'http://192.168.0.37:8080';
-  //static const String baseUrl = 'http://10.0.2.2:8080';
+  //static const String baseUrl = 'http://192.168.0.37:8080';
+  static const String baseUrl = 'http://10.0.2.2:8080';
 
   Future<Map<String, dynamic>> getGalleries({
     required int page,

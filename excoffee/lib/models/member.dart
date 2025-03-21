@@ -65,4 +65,21 @@ class Member {
       'emailVerified': emailVerified,
     };
   }
+  factory Member.empty() {
+    return Member(
+      userid: '',
+      name: 'Unknown',
+      email: '',
+      emailCk: '',
+      password: '',
+      passwordCk: '',
+      postcode: '',
+      address: '',
+      tel: '',
+      birthdate: '',
+      membership: 0,
+      loginType: 'NORMAL',
+      emailVerified: false,
+    );
+  }
 }

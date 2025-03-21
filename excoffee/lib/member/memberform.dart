@@ -39,8 +39,8 @@ class _MemberFormState extends State<MemberForm> {
 
       // 서버로 회원가입 요청 보내기 (예시 URL 사용)
       final response = await http.post(
-        //Uri.parse('http://10.0.2.2:8080/members/api/new'), // 서버 URL을 여기에 추가
-        Uri.parse('http://192.168.0.37:8080/members/api/new'), // 서버 URL을 여기에 추가
+        Uri.parse('http://10.0.2.2:8080/members/api/new'), // 서버 URL을 여기에 추가
+        //Uri.parse('http://192.168.0.37:8080/members/api/new'), // 서버 URL을 여기에 추가
         headers: {'Content-Type': 'application/json'},
         body: json.encode(_member.toJson()),
       );

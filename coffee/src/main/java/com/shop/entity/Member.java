@@ -1,6 +1,7 @@
 package com.shop.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.shop.constant.LoginType;
 import com.shop.constant.Role;
 import com.shop.dto.MemberFormDto;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @ToString
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) // 앱에서 직렬화문제로 Hibernate Proxy 관련 필드만 제외
 public class Member {
 
     @Id

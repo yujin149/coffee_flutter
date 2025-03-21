@@ -118,8 +118,8 @@ class _LoginPageState extends State<LoginPage> {
     final MemberProvider memberProvider = Provider.of<MemberProvider>(context, listen: false);
 
     final response = await http.post(
-      //Uri.parse('http://10.0.2.2:8080/api/oauth2/google'),
-      Uri.parse('http://192.168.0.37:8080/api/oauth2/google'),
+      Uri.parse('http://10.0.2.2:8080/api/oauth2/google'),
+      //Uri.parse('http://192.168.0.37:8080/api/oauth2/google'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'accessToken': accessToken, 'idToken': idToken}),
     );

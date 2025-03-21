@@ -15,6 +15,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.net.URLEncoder;
 
@@ -27,6 +30,18 @@ public class SecurityConfig {
     MemberService memberService;
     @Autowired
     private CustomOAuth2UserService customOAuth2UserService;
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOrigin("http://10.0.2.2:8080");  // Flutter 앱 URL
+        config.addAllowedOrigin("http://localhost:8080");  // 로컬 서버 URL
+        config.addAllowedMethod("*");  // 모든 HTTP 메서드 허용 (GET, POST, PUT, DELETE 등)
+        config.addAllowedHeader("*");  // 모든 헤더 허용
+        config.setAllowCredentials(true);  // 인증 정보 포함 허용
+        source.registerCorsConfiguration("/**", config);  // 모든 URL에 대해 CORS 설정 적용
+        return source;
+    }
 
     //컨테이너 올라가있으면 AutoWired로 불러서 사용할수있다
     @Bean //(Bean 객체) 스프링 컨테이너에 올라가는 객체 / 빌더패턴으로 바꿈
@@ -35,79 +50,81 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
         //로그인을 Security한테 물어봄
         http
-                .authorizeHttpRequests(auth -> auth
-                        //security가  이 url에 있으면 확인을 안하고 통과 시켜줌
-                        //permitAll() 을 사용하면 해당 조건들(patterns)에 들어오면 접근을 가능하게 해준다
-                        .requestMatchers("/","/members/**","/item/**","/images/**","/api/**").permitAll()
-                        .requestMatchers("/css/**","/js/**","/img/**","/favicon.ico","/error").permitAll()
-                        .requestMatchers("/images/**").permitAll()
-                        .requestMatchers("/members/sendEmail", "/members/checkCode").permitAll()
-                        .requestMatchers("/","/members/**","/item/**","/images/**").permitAll()
-                        // "/admin/**" 패턴은 ADMIN 권한 필요
-                        .requestMatchers("/admin/**").hasRole("ADMIN")// /admin/** admin 밑에 있는 하위 어떤 url 포함 됩니다.
-                        .requestMatchers("/admin/orders/stats/daily-details/excel").hasRole("ADMIN") //엑셀 다운로드 권한 필요
-                        .requestMatchers("/mypage/**").permitAll()
-                        .requestMatchers("/chat").permitAll()
-                        .requestMatchers("/order/total").permitAll()
-                        // WebSocket 엔드포인트 허용
-                        .requestMatchers("/counsel/**").permitAll()
-                        .requestMatchers("/topic/**").permitAll()
-                        .requestMatchers("/app/**").permitAll()
-                        .requestMatchers("/ws/**").permitAll()
+            .cors().configurationSource(corsConfigurationSource())
+            .and()
+            .authorizeHttpRequests(auth -> auth
+                //security가  이 url에 있으면 확인을 안하고 통과 시켜줌
+                //permitAll() 을 사용하면 해당 조건들(patterns)에 들어오면 접근을 가능하게 해준다
+                .requestMatchers("/css/**","/js/**","/img/**","/favicon.ico","/error").permitAll()
+                .requestMatchers("/images/**").permitAll()
+                .requestMatchers("/members/sendEmail", "/members/checkCode").permitAll()
+                .requestMatchers("/","/members/**","/item/**","/images/**","/api/**").permitAll()
+                .requestMatchers("/orders/api/**").permitAll()
+                // "/admin/**" 패턴은 ADMIN 권한 필요
+                .requestMatchers("/admin/**").hasRole("ADMIN")// /admin/** admin 밑에 있는 하위 어떤 url 포함 됩니다.
+                .requestMatchers("/admin/orders/stats/daily-details/excel").hasRole("ADMIN") //엑셀 다운로드 권한 필요
+                .requestMatchers("/mypage/**").permitAll()
+                .requestMatchers("/chat").permitAll()
+                .requestMatchers("/order/total").permitAll()
+                // WebSocket 엔드포인트 허용
+                .requestMatchers("/counsel/**").permitAll()
+                .requestMatchers("/topic/**").permitAll()
+                .requestMatchers("/app/**").permitAll()
+                .requestMatchers("/ws/**").permitAll()
 
-                        .requestMatchers("/debug/**").permitAll()  //디버그 확인용
-                        .requestMatchers("/all/**").permitAll()  // 전체 메뉴 페이지 접근 허용
-                        .requestMatchers("/coffee/**").permitAll()  // 커피 페이지 접근 허용
-                        .requestMatchers("/bean/**").permitAll()  // 원두 페이지 접근 허용
-                        .requestMatchers("/desert/**").permitAll()  // 디저트 페이지 접근 허용
-                        .requestMatchers("/store/**").permitAll()  // 매장 안내 페이지 접근 허용
-                        .requestMatchers("/board/**").permitAll()  // 공지사항 관련 URL 접근 허용
-                        .requestMatchers("/gallery/**").permitAll()  // 갤러리 관련 URL 접근 허용
-                        .requestMatchers("/inquiry/**").permitAll()  // 문의하기 관련 URL 접근 허용
-                        .requestMatchers("/search/**").permitAll()
-                        .anyRequest().authenticated()// 위에를 제외한 모든 url 맵핑은 모두 로그인이 되어야 접속 가능
-                )
-                .formLogin(formLogin -> formLogin // form 로그인 경우 여기로 온다. 로그인을 누르면 여기로 온다
-                        .loginPage("/members/login")    // 로그인 페이지는 /members/login (url) 데이터를 받는다
-                        .successHandler(new CustomAuthenticationSuccessHandler()) // 성공 핸들러 등록 아래 주석은 보내주기만 하는데
+                .requestMatchers("/debug/**").permitAll()  //디버그 확인용
+                .requestMatchers("/all/**").permitAll()  // 전체 메뉴 페이지 접근 허용
+                .requestMatchers("/coffee/**").permitAll()  // 커피 페이지 접근 허용
+                .requestMatchers("/bean/**").permitAll()  // 원두 페이지 접근 허용
+                .requestMatchers("/desert/**").permitAll()  // 디저트 페이지 접근 허용
+                .requestMatchers("/store/**").permitAll()  // 매장 안내 페이지 접근 허용
+                .requestMatchers("/board/**").permitAll()  // 공지사항 관련 URL 접근 허용
+                .requestMatchers("/gallery/**").permitAll()  // 갤러리 관련 URL 접근 허용
+                .requestMatchers("/inquiry/**").permitAll()  // 문의하기 관련 URL 접근 허용
+                .requestMatchers("/search/**").permitAll()
+                .anyRequest().authenticated()// 위에를 제외한 모든 url 맵핑은 모두 로그인이 되어야 접속 가능
+            )
+            .formLogin(formLogin -> formLogin // form 로그인 경우 여기로 온다. 로그인을 누르면 여기로 온다
+                    .loginPage("/members/login")    // 로그인 페이지는 /members/login (url) 데이터를 받는다
+                    .successHandler(new CustomAuthenticationSuccessHandler()) // 성공 핸들러 등록 아래 주석은 보내주기만 하는데
 //                        .defaultSuccessUrl("/") // 로그인 성공하면 "/"(url) 여기서 보내준다
-                        .usernameParameter("userid") // 로그인에 필요한 파라미터("email")
-                        .failureUrl("/members/login/error") // 실패시 이동 url /members/login/error
+                    .usernameParameter("userid") // 로그인에 필요한 파라미터("email")
+                    .failureUrl("/members/login/error") // 실패시 이동 url /members/login/error
 
-                ).logout(logout -> logout
-                                //로그아웃을 누르면 여기로 온다 //로그아웃 실행
-                                .logoutRequestMatcher(new AntPathRequestMatcher("/members/logout"))
-                                .logoutSuccessUrl("/") // 로그아웃 성공시 실행
-                        //구글,네이버,카카오 로그인 성공하면
+            ).logout(logout -> logout
+                    //로그아웃을 누르면 여기로 온다 //로그아웃 실행
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/members/logout"))
+                    .logoutSuccessUrl("/") // 로그아웃 성공시 실행
+                //구글,네이버,카카오 로그인 성공하면
+            )
+            //.csrf( csrf -> {})
+            //.csrf(csrf -> csrf.ignoringRequestMatchers("/cart/**", "/api/**"))
+            .csrf(csrf -> csrf
+                ///members/**와 /images/**를 CSRF 예외 목록에 추가
+                .ignoringRequestMatchers(
+                    "/cart/**",
+                    "/api/**",
+                    "/order/**",
+                    "/counsel/**",
+                    "/topic/**",
+                    "/app/**",
+                    "/ws/**",
+                    "/webjars/**",
+                    "/members/**",
+                    "/images/**",
+                    "/admin/orders/stats/daily-details/excel"
                 )
-                //.csrf( csrf -> {})
-                //.csrf(csrf -> csrf.ignoringRequestMatchers("/cart/**", "/api/**"))
-                .csrf(csrf -> csrf
-                    ///members/**와 /images/**를 CSRF 예외 목록에 추가
-                    .ignoringRequestMatchers(
-                        "/cart/**",
-                        "/api/**",
-                        "/order/**",
-                        "/counsel/**",
-                        "/topic/**",
-                        "/app/**",
-                        "/ws/**",
-                        "/webjars/**",
-                        "/members/**",
-                        "/images/**",
-                        "/admin/orders/stats/daily-details/excel"
-                    )
 
-                )
-                .oauth2Login(oauthLogin -> oauthLogin
-                        .defaultSuccessUrl("/") // 로그인 성공하면 "/"(url) 여기서 보내준다
-                        .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig
-                                //customOAuth2UserService
-                                .userService(customOAuth2UserService))
-                );
+            )
+            .oauth2Login(oauthLogin -> oauthLogin
+                .defaultSuccessUrl("/") // 로그인 성공하면 "/"(url) 여기서 보내준다
+                .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig
+                    //customOAuth2UserService
+                    .userService(customOAuth2UserService))
+            );
         //exceptionHandling 예외처리 핸들링 예외처리가 발생하면 CustomAuthenticationEntryPoint 클래스 위임
         http.exceptionHandling(exception -> exception
-                .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+            .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
         );
         return http.build();
     }

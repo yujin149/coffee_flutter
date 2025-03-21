@@ -107,8 +107,10 @@ public class OrderController {
         // 페이징 설정
         Pageable pageable = PageRequest.of(page.isPresent() ? page.get() : 0, 5);
 
+        int count = 0;
+
         // 로그인된 사용자의 주문 내역 조회
-        Page<OrderHistDto> orderHistDtoList = orderService.getOrderList(principal.getName(), pageable);
+        Page<OrderHistDto> orderHistDtoList = orderService.getOrderList(principal.getName(), pageable,count);
 
         // 뷰에 데이터 전달
         model.addAttribute("orders", orderHistDtoList);
@@ -192,7 +194,7 @@ public class OrderController {
 
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("{\"error\":\"로그인이 필요합니다.\"}");
+                .body("{\"error\":\"로그인이 필요합니다.\"}");
         }
 
         try {

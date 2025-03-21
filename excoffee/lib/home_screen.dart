@@ -4,7 +4,6 @@ import 'package:excoffee/store/store.dart';
 import 'package:excoffee/board/board.dart';
 import 'package:excoffee/gallery/gallery.dart';
 
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -14,7 +13,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  
+
   final List<Widget> _pages = [
     const MainScreen(),
     const Store(),
@@ -33,7 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),

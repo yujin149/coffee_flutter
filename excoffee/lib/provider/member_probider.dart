@@ -34,8 +34,8 @@ class MemberProvider extends ChangeNotifier {
 /// 2. jwt 토큰을 SecureStorage 에 저장
   Future<void> login(String userid, String password) async {
 
-    //const url = 'http://10.0.2.2:8080/members/api/login'; // 로그인 경로
-    const url = 'http://192.168.0.37:8080/members/api/login'; // 로그인 경로
+    const url = 'http://10.0.2.2:8080/members/api/login'; // 로그인 경로
+    //const url = 'http://192.168.0.37:8080/members/api/login'; // 로그인 경로
     final requestUrl = Uri.parse(url);
     try {
       // 로그인 요청
@@ -93,8 +93,8 @@ class MemberProvider extends ChangeNotifier {
        return;
      }
 
-     //final url =  'http://10.0.2.2:8080/members/api/info'; // 사용자 정보 요청 경로
-     final url =  'http://192.168.0.37:8080/members/api/info'; // 사용자 정보 요청 경로
+     final url =  'http://10.0.2.2:8080/members/api/info'; // 사용자 정보 요청 경로
+     //final url =  'http://192.168.0.37:8080/members/api/info'; // 사용자 정보 요청 경로
      try {
        // 저장된 jwt 가져오기
        String? token = await storage.read(key: 'jwtToken');

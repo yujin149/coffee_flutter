@@ -55,7 +55,7 @@ public class OrderService {
 
         // 상품 조회
         Item item = itemRepository.findById(orderDto.getItemId())
-                .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다."));
+            .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다."));
 
         // 사용자 정보 조회
         Member member = memberRepository.findByUserid(userid);
@@ -93,28 +93,49 @@ public class OrderService {
         return order.getId();
     }
     @Transactional(readOnly = true)
-    public Page<OrderHistDto> getOrderList(String userid, Pageable pageable){
-        List<Order> orders = orderRepository.findOrders(userid,pageable); // 주문 리스트
-        Long totalCount = orderRepository.countOrder(userid); // 총 주문 수
-        List<OrderHistDto> orderHistDtos = new ArrayList<>(); // 주문 히스토리 리스트
+    public Page<OrderHistDto> getOrderList(String userid, Pageable pageable,int count){
+        System.out.println("서비스에서 확인 " + userid + " count : " + count + " pageable :" + pageable);
 
-        for(Order order : orders){ // 주문 틀 -> 주문
-            OrderHistDto orderHistDto = new OrderHistDto(order); // 주문 히스토리 객체생성
-            List<OrderItem> orderItems = order.getOrderItems(); // 주문 -> 주문 아이템들
-            for(OrderItem orderItem : orderItems){ // 주문 아이템들 -> 주문 아이템
-                // 주문 아이템 -> item id를 추출 해서 대표이미지를 받습니다. ItemImg
-                ItemImg itemImg = itemImgRepository.findByItemIdAndRepImgYn(orderItem.getItem().getId(),
-                        "Y");
-                // 주문 아이템, 대표이미지 URL을 이용해서 OrderItemDto 객체를 생성
-                OrderItemDto orderItemDto = new OrderItemDto(orderItem, itemImg.getImgUrl());
-                // 주문 히스토리 -> 주문 아이템 리스트에 추가
-                orderHistDto.addOrderItemDto(orderItemDto);
+        if(count == 1){
+            Page<Order> orders = orderRepository.findOrdersApi(userid, pageable);
+            System.out.println("orders: " + orders);
+            List<OrderHistDto> orderHistDtos = new ArrayList<>();
+            Long totalCount = orderRepository.countOrder(userid);
+            for (Order order : orders.getContent()) {
+                OrderHistDto orderHistDto = new OrderHistDto(order);
+                List<OrderItem> orderItems = order.getOrderItems();
+                for (OrderItem orderItem : orderItems) {
+                    ItemImg itemImg = itemImgRepository.findByItemIdAndRepImgYn(orderItem.getItem().getId(), "Y");
+                    OrderItemDto orderItemDto = new OrderItemDto(orderItem, itemImg.getImgUrl());
+                    orderHistDto.addOrderItemDto(orderItemDto);
+                }
+                orderHistDtos.add(orderHistDto);
             }
-            // 주문 히스트리스트에 주문히스토리를 추가
-            orderHistDtos.add(orderHistDto);
+            return new PageImpl<>(orderHistDtos, pageable, totalCount);
+        } else {
+            List<Order> orders = orderRepository.findOrders(userid,pageable); // 주문 리스트
+            Long totalCount = orderRepository.countOrder(userid); // 총 주문 수
+            List<OrderHistDto> orderHistDtos = new ArrayList<>(); // 주문 히스토리 리스트
+
+            for(Order order : orders){ // 주문 틀 -> 주문
+                OrderHistDto orderHistDto = new OrderHistDto(order); // 주문 히스토리 객체생성
+                List<OrderItem> orderItems = order.getOrderItems(); // 주문 -> 주문 아이템들
+                for(OrderItem orderItem : orderItems){ // 주문 아이템들 -> 주문 아이템
+                    // 주문 아이템 -> item id를 추출 해서 대표이미지를 받습니다. ItemImg
+                    ItemImg itemImg = itemImgRepository.findByItemIdAndRepImgYn(orderItem.getItem().getId(),
+                        "Y");
+                    // 주문 아이템, 대표이미지 URL을 이용해서 OrderItemDto 객체를 생성
+                    OrderItemDto orderItemDto = new OrderItemDto(orderItem, itemImg.getImgUrl());
+                    // 주문 히스토리 -> 주문 아이템 리스트에 추가
+                    orderHistDto.addOrderItemDto(orderItemDto);
+                }
+                // 주문 히스트리스트에 주문히스토리를 추가
+                orderHistDtos.add(orderHistDto);
+            }
+            // pageImpl 주문히스토리 리스트, 페이지 세팅, 총 갯수
+            return new PageImpl<OrderHistDto>(orderHistDtos,pageable,totalCount);
+
         }
-        // pageImpl 주문히스토리 리스트, 페이지 세팅, 총 갯수
-        return new PageImpl<OrderHistDto>(orderHistDtos,pageable,totalCount);
     }
 
     @Transactional(readOnly = true)
@@ -170,7 +191,7 @@ public class OrderService {
     //단일 결제 재고 확인
     public Item getItem(Long itemId) {
         return itemRepository.findById(itemId)
-                .orElseThrow(() -> new IllegalArgumentException("상품 ID가 유효하지 않습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("상품 ID가 유효하지 않습니다."));
     }
 
     //토탈 주문 확인
@@ -194,9 +215,9 @@ public class OrderService {
             case "status":
                 try {
                     Map<String, String> statusMap = Map.of(
-                            "주문", "ORDER",
-                            "취소", "CANCEL",
-                            "요청", "CANCEL_REQUEST"
+                        "주문", "ORDER",
+                        "취소", "CANCEL",
+                        "요청", "CANCEL_REQUEST"
                     );
                     String englishStatus = statusMap.getOrDefault(searchQuery, searchQuery.toUpperCase());
                     return orderRepository.findByOrderStatusOrderByIdDesc(OrderStatus.valueOf(englishStatus), pageable);
@@ -229,7 +250,7 @@ public class OrderService {
     @Transactional(readOnly = true)
     public OrderHistDto getOrderDetail(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 주문이 존재하지 않습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("해당 주문이 존재하지 않습니다."));
 
         OrderHistDto orderHistDto = new OrderHistDto(order);
         List<OrderItem> orderItems = order.getOrderItems();
@@ -245,7 +266,7 @@ public class OrderService {
     @Transactional
     public void requestCancelOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("주문 정보를 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("주문 정보를 찾을 수 없습니다."));
 
         order.setOrderStatus(OrderStatus.CANCEL_REQUEST);
         orderRepository.save(order);
@@ -255,12 +276,12 @@ public class OrderService {
         try {
             RestTemplate restTemplate = new RestTemplate();
             Map<String, String> request = Map.of(
-                    "imp_key", "4841603528840108",
-                    "imp_secret", "3K0zLN3vBIRMxLBVOpqzQ8U2LuZgpQqlp8SssIPoEO3a9Ut6DJUS4szAczaA9sqX7kecpsrSA7fwC9Dy"
+                "imp_key", "4841603528840108",
+                "imp_secret", "3K0zLN3vBIRMxLBVOpqzQ8U2LuZgpQqlp8SssIPoEO3a9Ut6DJUS4szAczaA9sqX7kecpsrSA7fwC9Dy"
             );
 
             ResponseEntity<Map> response = restTemplate.postForEntity(
-                    "https://api.iamport.kr/users/getToken", request, Map.class);
+                "https://api.iamport.kr/users/getToken", request, Map.class);
 
             System.out.println("아임포트 토큰 응답: " + response.getBody()); // 응답 확인
 
@@ -294,14 +315,14 @@ public class OrderService {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         Map<String, Object> body = Map.of(
-                "imp_uid", impUid,
-                "amount", amount,
-                "reason", "취소 요청 승인"
+            "imp_uid", impUid,
+            "amount", amount,
+            "reason", "취소 요청 승인"
         );
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
         ResponseEntity<Map> response = restTemplate.postForEntity(
-                "https://api.iamport.kr/payments/cancel", request, Map.class);
+            "https://api.iamport.kr/payments/cancel", request, Map.class);
 
         // 응답 출력
         System.out.println("아임포트 API 응답: " + response.getBody());
@@ -316,7 +337,7 @@ public class OrderService {
 
         System.out.println("환불요청 서비스");
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("주문 정보를 찾을 수 없습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("주문 정보를 찾을 수 없습니다."));
 
         // 상태 검증
         if (order.getOrderStatus() != OrderStatus.CANCEL_REQUEST) {
@@ -337,7 +358,7 @@ public class OrderService {
     public Long getMonthlyOrderTotal(int year, int month) {
         LocalDateTime startOfMonth = LocalDateTime.of(year, month, 1, 0, 0);
         LocalDateTime endOfMonth = startOfMonth.plusMonths(1).minusSeconds(1);
-        
+
         return orderRepository.findTotalAmountByDateBetween(startOfMonth, endOfMonth);
     }
 
@@ -358,18 +379,18 @@ public class OrderService {
         salesByCategory.put("COFFEE", 0L);
         salesByCategory.put("BEAN", 0L);
         salesByCategory.put("DESERT", 0L);
-        
+
         List<Object[]> results = orderRepository.findDailySalesByCategory(date);
         System.out.println("Query results size: " + results.size());
         Long total = 0L;
-        
+
         for (Object[] result : results) {
             ItemMenu menu = (ItemMenu) result[0];
             String category = menu.name();
             Long amount = ((Number) result[1]).longValue();
-            
+
             System.out.println("Category: " + category + ", Amount: " + amount);
-            
+
             switch(category) {
                 case "COFFEE":
                     salesByCategory.put("COFFEE", amount);
@@ -387,7 +408,7 @@ public class OrderService {
             total += amount;
         }
         salesByCategory.put("TOTAL", total);
-        
+
         System.out.println("Final sales by category: " + salesByCategory);
         return salesByCategory;
     }
@@ -396,7 +417,7 @@ public class OrderService {
     public List<Map<String, Object>> getTopSellingItems() {
         PageRequest pageRequest = PageRequest.of(0, 15); // 상위 15개 상품
         List<Object[]> results = orderRepository.findTopSellingItems(pageRequest);
-        
+
         List<Map<String, Object>> topItems = new ArrayList<>();
         for (Object[] result : results) {
             Map<String, Object> item = new HashMap<>();
@@ -405,7 +426,7 @@ public class OrderService {
             item.put("orderCount", result[2]); // 주문 수
             topItems.add(item);
         }
-        
+
         return topItems;
     }
 
@@ -413,7 +434,7 @@ public class OrderService {
     public Page<Map<String, Object>> getDailyOrderDetails(LocalDateTime date, ItemMenu category, Pageable pageable) {
         PageRequest pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         Page<Object[]> results = orderRepository.findDailyOrderDetails(date, category, pageRequest);
-        
+
         return results.map(result -> {
             Map<String, Object> order = new HashMap<>();
             order.put("orderId", result[0]);
@@ -437,10 +458,10 @@ public class OrderService {
         if (!"TOTAL".equals(category)) {
             itemMenu = ItemMenu.valueOf(category);
         }
-        
+
         PageRequest pageRequest = PageRequest.of(0, Integer.MAX_VALUE);
         Page<Object[]> results = orderRepository.findDailyOrderDetails(date, itemMenu, pageRequest);
-        
+
         return results.getContent().stream().map(result -> {
             Map<String, Object> order = new HashMap<>();
             order.put("orderId", result[0]);

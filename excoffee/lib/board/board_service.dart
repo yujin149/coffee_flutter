@@ -4,7 +4,8 @@ import 'board_model.dart';
 
 class BoardService {
   // 실제 모바일 기기에서 테스트할 때는 컴퓨터의 실제 IP 주소를 사용
-  static const String baseUrl = 'http://192.168.0.37:8080/api';
+  //static const String baseUrl = 'http://192.168.0.37:8080/api';
+  static const String baseUrl = 'http://10.0.2.2:8080/api';
 
   // 안드로이드 에뮬레이터용 서버 URL
   //static const String baseUrlEmulator = 'http://10.0.2.2:8080/api';
