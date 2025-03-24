@@ -26,16 +26,16 @@ class MemberProvider extends ChangeNotifier {
     notifyListeners(); // 상태 변경을 UI에 반영하도록 알림
   }
 
-/// 🔐 로그인 요청
-/// 1. 요청 및 응답
-/// ➡ userid, password
-/// ⬅ jwt token
-///
-/// 2. jwt 토큰을 SecureStorage 에 저장
+  /// 🔐 로그인 요청
+  /// 1. 요청 및 응답
+  /// ➡ userid, password
+  /// ⬅ jwt token
+  ///
+  /// 2. jwt 토큰을 SecureStorage 에 저장
   Future<void> login(String userid, String password) async {
 
-    const url = 'http://10.0.2.2:8080/members/api/login'; // 로그인 경로
-    //const url = 'http://192.168.0.37:8080/members/api/login'; // 로그인 경로
+    //const url = 'http://10.0.2.2:8080/members/api/login'; // 로그인 경로
+    const url = 'http://192.168.0.37:8080/members/api/login'; // 로그인 경로
     final requestUrl = Uri.parse(url);
     try {
       // 로그인 요청
@@ -81,63 +81,65 @@ class MemberProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-/// 👩‍💼👨‍💼 사용자 정보 가져오기
-/// 1. 💍 jwt ➡ 서버
-/// 2. 클라이언트 ⬅ 👩‍💼👨‍💼
-/// 3. 👩‍💼👨‍💼(memberInfo) ➡ _memberInfo [provider] 저장
-   Future<void> getMemberInfo() async{
-     final jwtToken = await storage.read(key: 'jwtToken');
+  /// 👩‍💼👨‍💼 사용자 정보 가져오기
+  /// 1. 💍 jwt ➡ 서버
+  /// 2. 클라이언트 ⬅ 👩‍💼👨‍💼
+  /// 3. 👩‍💼👨‍💼(memberInfo) ➡ _memberInfo [provider] 저장
+  Future<void> getMemberInfo() async{
+    final jwtToken = await storage.read(key: 'jwtToken');
+    final userid = await storage.read(key: 'userid');
 
-     if (jwtToken == null) {
-       print("토큰이 존재하지 않습니다.");
-       return;
-     }
+    if (jwtToken == null) {
+      print("토큰이 존재하지 않습니다.");
+      return;
+    }
 
-     final url =  'http://10.0.2.2:8080/members/api/info'; // 사용자 정보 요청 경로
-     //final url =  'http://192.168.0.37:8080/members/api/info'; // 사용자 정보 요청 경로
-     try {
-       // 저장된 jwt 가져오기
-       String? token = await storage.read(key: 'jwtToken');
-       print('사용자 정보 요청 전: jwt - $token');
+    //final url =  'http://10.0.2.2:8080/members/api/info'; // 사용자 정보 요청 경로
+    final url =  'http://192.168.0.37:8080/members/api/info'; // 사용자 정보 요청 경로
+    try {
+      // 저장된 jwt 가져오기
+      String? token = await storage.read(key: 'jwtToken');
+      print('사용자 정보 요청 전: jwt - $token');
 //jwt - eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJleHAiOjE3MDY5NTEzMTgsInVubyI6IjI0IiwidWlkIjoiY2h1eWoyIiwicm9sIjpbIlJPTEVfU0VMTCJdfQ.RavcKqDokDQrWU2oK4yRGV1paoGWsQrQ7gUb4WhgNgFaOxtOjp35YMY58lZWuZV4zbJzEIfN1LQtstUG9ztntg
-       final response = await http.get(
-         Uri.parse(url),
-         headers: {
-           'Authorization': 'Bearer $token',
-           'Content-Type': 'application/json',
-         },
-       );
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
 
-       if(response.statusCode == 200) {
-         // 성공적으로 데이터를 받아왔을 때의 처리
-         var utf8Decoded = utf8.decode(response.bodyBytes);
-         var result = json.decode(utf8Decoded);
-         final memberInfo = result;
-         print('Member Info: $memberInfo');
-         // provider 에 사용자 정보 저장
-         // memberInfo ➡ _memberInfo 로 저장
-         // provider  등록
-         _memberInfo = Member.fromJson(memberInfo);
-         setLoggedIn(true);
-         print(_memberInfo);
-       } else {
-         // HTTP 요청이 실패했을 때의 처리
-         print('HTTP 요청 실패: ${response.statusCode}');
+      if(response.statusCode == 200) {
+        // 성공적으로 데이터를 받아왔을 때의 처리
+        var utf8Decoded = utf8.decode(response.bodyBytes);
+        var result = json.decode(utf8Decoded);
+        final memberInfo = result;
+        print('Member Info: $memberInfo');
+        // provider 에 사용자 정보 저장
+        // memberInfo ➡ _memberInfo 로 저장
+        // provider  등록
+        _memberInfo = Member.fromJson(memberInfo);
+        setLoggedIn(true);
+        print(_memberInfo);
+      } else {
+        // HTTP 요청이 실패했을 때의 처리
+        print('HTTP 요청 실패: ${response.statusCode}');
 
-         print('사용자 정보 요청 성공');
-       }
-     }
-     catch (error){
-       print('사용자 정보 요청 실패 $error');
-     }
-     notifyListeners();
-   }
+        print('사용자 정보 요청 성공');
+      }
+    }
+    catch (error){
+      print('사용자 정보 요청 실패 $error');
+    }
+    notifyListeners();
+  }
   //로그아웃
-   Future<void> logOut() async {
+  Future<void> logOut() async {
     try{
       // ⬅👨‍💼 로그아웃 처리
       // jwt 토큰 삭제
       await storage.delete(key: 'jwtToken');
+      await storage.delete(key: 'userId');
       // 사용자 정보 초기화
       _memberInfo = Member();
       // 로그인 상태 초기화
@@ -149,7 +151,7 @@ class MemberProvider extends ChangeNotifier {
     }
     print('notifyListeners 요청됨');
     notifyListeners();
-   }
+  }
 
 
   Future<void> checkLoginStatus() async {
@@ -161,40 +163,4 @@ class MemberProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-
-  // Future<void> socialLogin(String provider, String authCode) async {
-  //   final url = 'http://10.0.2.2:8080/api/oauth2/google';
-  //   final requestUrl = Uri.parse(url);
-  //
-  //   try {
-  //     final response = await http.post(
-  //       requestUrl,
-  //       headers: {"Content-Type": "application/json"},
-  //       body: json.encode({"authCode": authCode}),
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       final responseBody = json.decode(response.body);
-  //       final jwtToken = responseBody['token'];
-  //
-  //       if (jwtToken != null) {
-  //         // ✅ JWT 토큰 저장
-  //         await storage.write(key: 'jwtToken', value: jwtToken);
-  //         _isLoggedIn = true;
-  //         notifyListeners();
-  //
-  //         print('소셜 로그인 성공! JWT: $jwtToken');
-  //
-  //         // ✅ 사용자 정보 요청
-  //         await getMemberInfo();
-  //       } else {
-  //         print('소셜 로그인 실패: 응답에 토큰 없음');
-  //       }
-  //     } else {
-  //       print('소셜 로그인 실패: ${response.statusCode}');
-  //     }
-  //   } catch (error) {
-  //     print('소셜 로그인 요청 중 오류 발생: $error');
-  //   }
-  // }
 }

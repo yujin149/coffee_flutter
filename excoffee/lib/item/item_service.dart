@@ -3,7 +3,8 @@ import 'package:http/http.dart' as http;
 import '../models/item.dart';
 
 class ItemService {
-  static const String baseUrl = 'http://10.0.2.2:8080/api/main/items';
+  //static const String baseUrl = 'http://10.0.2.2:8080/api/main/items';
+  static const String baseUrl = 'http://192.168.0.37:8080/api/main/items';
 
   Future<Map<String, dynamic>> fetchItems({int page = 0}) async {
     try {

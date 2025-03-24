@@ -32,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -52,9 +53,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: const Color(0xFFEE3424),
-        unselectedItemColor: Color(0xFF888888),
-        selectedLabelStyle: const TextStyle(color: Color(0xFFEE3424), fontSize: 13,),
-        unselectedLabelStyle: const TextStyle(color: Color(0xFF606060), fontSize: 13,),
+        unselectedItemColor: const Color(0xFF888888),
+        selectedLabelStyle: const TextStyle(fontSize: 12),
+        unselectedLabelStyle: const TextStyle(fontSize: 12),
+        showUnselectedLabels: true,
         onTap: _onItemTapped,
       ),
     );

@@ -42,6 +42,10 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
 
+      await storage.write(key: 'userId', value: _useridController.text);
+      String? savedUserId = await storage.read(key: 'userId');
+      print("저장된 사용자 ID: $savedUserId");
+
       // 1초 후에 메인 화면으로 이동 (메시지가 보일 시간 확보)
       Future.delayed(Duration(seconds: 1), () {
         Navigator.pushReplacement(
@@ -105,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
       if (accessToken != null && idToken != null) {
         print("sendGoogleTokenToBackend");
         // 백엔드로 토큰 전달
-        await sendGoogleTokenToBackend(context, accessToken, idToken);
+        await sendGoogleTokenToBackend(context, accessToken, idToken,googleUser.email);
       } else {
         print("Google 로그인 실패: 토큰이 유효하지 않음");
       }
@@ -114,12 +118,12 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> sendGoogleTokenToBackend(BuildContext context, String accessToken, String idToken) async {
+  Future<void> sendGoogleTokenToBackend(BuildContext context, String accessToken, String idToken, String email) async {
     final MemberProvider memberProvider = Provider.of<MemberProvider>(context, listen: false);
 
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8080/api/oauth2/google'),
-      //Uri.parse('http://192.168.0.37:8080/api/oauth2/google'),
+      //Uri.parse('http://10.0.2.2:8080/api/oauth2/google'),
+      Uri.parse('http://192.168.0.37:8080/api/oauth2/google'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'accessToken': accessToken, 'idToken': idToken}),
     );
@@ -131,6 +135,7 @@ class _LoginPageState extends State<LoginPage> {
       if (jwtToken != null) {
 
         await storage.write(key: 'jwtToken', value: jwtToken);
+        await storage.write(key: 'userId', value: email);
         // 정상적으로 JWT 토큰을 받아왔을 때
         String? savedToken = await storage.read(key: 'jwtToken');
         print("저장된 JWT 토큰 확인: $savedToken");
@@ -150,11 +155,12 @@ class _LoginPageState extends State<LoginPage> {
               ),
             );
 
+
             // 1초 후에 메인 화면으로 이동 (메시지가 보일 시간 확보)
             Future.delayed(Duration(seconds: 1), () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => HomeScreen()),
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
               );
             });
 
@@ -291,16 +297,16 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     _socialLoginButton(
-                      'images/ka.png',
-                      "카카오 아이디로 로그인",
-                      Color(0xFFFEE500), // 카카오 색상
-                      "kakao"
+                        'images/ka.png',
+                        "카카오 아이디로 로그인",
+                        Color(0xFFFEE500), // 카카오 색상
+                        "kakao"
                     ),
                     _socialLoginButton(
-                      'images/na.png',
-                      "네이버 아이디로 로그인",
-                      Color(0xFF03C75A), // 네이버 색상
-                      "naver"
+                        'images/na.png',
+                        "네이버 아이디로 로그인",
+                        Color(0xFF03C75A), // 네이버 색상
+                        "naver"
                     ),
                   ],
                 ),

@@ -233,7 +233,8 @@ class _MainScreenState extends State<MainScreen> {
 
                                       item.imageUrl.startsWith('http')
                                           ? item.imageUrl
-                                          : 'http://10.0.2.2:8080${item.imageUrl}',
+                                          //: 'http://10.0.2.2:8080${item.imageUrl}',
+                                          : 'http://192.168.0.37:8080${item.imageUrl}',
                                       width: double.infinity, // 부모 크기 맞춤
                                       height: 120,
                                       fit: BoxFit.cover,

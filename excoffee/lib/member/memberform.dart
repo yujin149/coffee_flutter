@@ -39,8 +39,8 @@ class _MemberFormState extends State<MemberForm> {
 
       // 서버로 회원가입 요청 보내기 (예시 URL 사용)
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8080/members/api/new'), // 서버 URL을 여기에 추가
-        //Uri.parse('http://192.168.0.37:8080/members/api/new'), // 서버 URL을 여기에 추가
+        //Uri.parse('http://10.0.2.2:8080/members/api/new'), // 서버 URL을 여기에 추가
+        Uri.parse('http://192.168.0.37:8080/members/api/new'), // 서버 URL을 여기에 추가
         headers: {'Content-Type': 'application/json'},
         body: json.encode(_member.toJson()),
       );
@@ -149,111 +149,111 @@ class _MemberFormState extends State<MemberForm> {
     );
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     appBar: AppBar(
-  //       title: const Text('회원가입'),
-  //     ),
-  //     body: Padding(
-  //       padding: const EdgeInsets.all(16.0),
-  //       child: Form(
-  //         key: _formKey,
-  //         child: ListView(
-  //           children: [
-  //             // 사용자 아이디
-  //             TextFormField(
-  //               controller: _useridController,
-  //               decoration: const InputDecoration(labelText: '아이디'),
-  //               validator: (value) {
-  //                 if (value == null || value.isEmpty) {
-  //                   return '아이디를 입력해주세요.';
-  //                 }
-  //                 return null;
-  //               },
-  //             ),
-  //             // 사용자 이름
-  //             TextFormField(
-  //               controller: _nameController,
-  //               decoration: const InputDecoration(labelText: '이름'),
-  //               validator: (value) {
-  //                 if (value == null || value.isEmpty) {
-  //                   return '이름을 입력해주세요.';
-  //                 }
-  //                 return null;
-  //               },
-  //             ),
-  //             // 사용자 이메일
-  //             TextFormField(
-  //               controller: _emailController,
-  //               decoration: const InputDecoration(labelText: '이메일'),
-  //               validator: (value) {
-  //                 if (value == null || value.isEmpty) {
-  //                   return '이메일을 입력해주세요.';
-  //                 } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-  //                   return '유효한 이메일을 입력해주세요.';
-  //                 }
-  //                 return null;
-  //               },
-  //             ),
-  //             // 비밀번호
-  //             TextFormField(
-  //               controller: _passwordController,
-  //               decoration: const InputDecoration(labelText: '비밀번호'),
-  //               obscureText: true,
-  //               validator: (value) {
-  //                 if (value == null || value.isEmpty) {
-  //                   return '비밀번호를 입력해주세요.';
-  //                 }
-  //                 return null;
-  //               },
-  //             ),
-  //             // 비밀번호 확인
-  //             TextFormField(
-  //               controller: _passwordCkController,
-  //               decoration: const InputDecoration(labelText: '비밀번호 확인'),
-  //               obscureText: true,
-  //               validator: (value) {
-  //                 if (value == null || value.isEmpty) {
-  //                   return '비밀번호 확인을 입력해주세요.';
-  //                 } else if (value != _passwordController.text) {
-  //                   return '비밀번호가 일치하지 않습니다.';
-  //                 }
-  //                 return null;
-  //               },
-  //             ),
-  //             // 주소
-  //             TextFormField(
-  //               controller: _addressController,
-  //               decoration: const InputDecoration(labelText: '주소'),
-  //               validator: (value) {
-  //                 if (value == null || value.isEmpty) {
-  //                   return '주소를 입력해주세요.';
-  //                 }
-  //                 return null;
-  //               },
-  //             ),
-  //             // 전화번호
-  //             TextFormField(
-  //               controller: _telController,
-  //               decoration: const InputDecoration(labelText: '전화번호'),
-  //               validator: (value) {
-  //                 if (value == null || value.isEmpty) {
-  //                   return '전화번호를 입력해주세요.';
-  //                 }
-  //                 return null;
-  //               },
-  //             ),
-  //             const SizedBox(height: 20),
-  //             ElevatedButton(
-  //               onPressed: _submitForm,
-  //               child: const Text('회원가입'),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
+// @override
+// Widget build(BuildContext context) {
+//   return Scaffold(
+//     appBar: AppBar(
+//       title: const Text('회원가입'),
+//     ),
+//     body: Padding(
+//       padding: const EdgeInsets.all(16.0),
+//       child: Form(
+//         key: _formKey,
+//         child: ListView(
+//           children: [
+//             // 사용자 아이디
+//             TextFormField(
+//               controller: _useridController,
+//               decoration: const InputDecoration(labelText: '아이디'),
+//               validator: (value) {
+//                 if (value == null || value.isEmpty) {
+//                   return '아이디를 입력해주세요.';
+//                 }
+//                 return null;
+//               },
+//             ),
+//             // 사용자 이름
+//             TextFormField(
+//               controller: _nameController,
+//               decoration: const InputDecoration(labelText: '이름'),
+//               validator: (value) {
+//                 if (value == null || value.isEmpty) {
+//                   return '이름을 입력해주세요.';
+//                 }
+//                 return null;
+//               },
+//             ),
+//             // 사용자 이메일
+//             TextFormField(
+//               controller: _emailController,
+//               decoration: const InputDecoration(labelText: '이메일'),
+//               validator: (value) {
+//                 if (value == null || value.isEmpty) {
+//                   return '이메일을 입력해주세요.';
+//                 } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+//                   return '유효한 이메일을 입력해주세요.';
+//                 }
+//                 return null;
+//               },
+//             ),
+//             // 비밀번호
+//             TextFormField(
+//               controller: _passwordController,
+//               decoration: const InputDecoration(labelText: '비밀번호'),
+//               obscureText: true,
+//               validator: (value) {
+//                 if (value == null || value.isEmpty) {
+//                   return '비밀번호를 입력해주세요.';
+//                 }
+//                 return null;
+//               },
+//             ),
+//             // 비밀번호 확인
+//             TextFormField(
+//               controller: _passwordCkController,
+//               decoration: const InputDecoration(labelText: '비밀번호 확인'),
+//               obscureText: true,
+//               validator: (value) {
+//                 if (value == null || value.isEmpty) {
+//                   return '비밀번호 확인을 입력해주세요.';
+//                 } else if (value != _passwordController.text) {
+//                   return '비밀번호가 일치하지 않습니다.';
+//                 }
+//                 return null;
+//               },
+//             ),
+//             // 주소
+//             TextFormField(
+//               controller: _addressController,
+//               decoration: const InputDecoration(labelText: '주소'),
+//               validator: (value) {
+//                 if (value == null || value.isEmpty) {
+//                   return '주소를 입력해주세요.';
+//                 }
+//                 return null;
+//               },
+//             ),
+//             // 전화번호
+//             TextFormField(
+//               controller: _telController,
+//               decoration: const InputDecoration(labelText: '전화번호'),
+//               validator: (value) {
+//                 if (value == null || value.isEmpty) {
+//                   return '전화번호를 입력해주세요.';
+//                 }
+//                 return null;
+//               },
+//             ),
+//             const SizedBox(height: 20),
+//             ElevatedButton(
+//               onPressed: _submitForm,
+//               child: const Text('회원가입'),
+//             ),
+//           ],
+//         ),
+//       ),
+//     ),
+//   );
+// }
 
 }

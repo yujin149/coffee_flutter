@@ -41,7 +41,8 @@ class _OrderHistPageState extends State<OrderHistPage> {
     }
 
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8080/orders/api/$userId'),
+      //Uri.parse('http://10.0.2.2:8080/orders/api/$userId'),
+      Uri.parse('http://192.168.0.37:8080/orders/api/$userId'),
       headers: {
         "Content-Type": "application/json",
       },
@@ -121,7 +122,8 @@ class _OrderHistPageState extends State<OrderHistPage> {
                         Column(
                           children: order.orderItemDtoList.map((item) {
                             return ListTile(
-                              leading: Image.network('http://10.0.2.2:8080${item.imgUrl}'),
+                              //leading: Image.network('http://10.0.2.2:8080${item.imgUrl}'),
+                              leading: Image.network('http://192.168.0.37:8080${item.imgUrl}'),
                               title: Text(item.itemNm),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
