@@ -10,6 +10,9 @@ import 'package:excoffee/home_screen.dart';
 import 'package:excoffee/order/orderhist.dart';
 import 'package:excoffee/models/item.dart';
 import 'package:excoffee/item/item_service.dart';
+import 'package:excoffee/item/item_detail.dart'; // ✅ 상세 페이지
+
+
 
 
 class MainScreen extends StatefulWidget {
@@ -36,6 +39,8 @@ class _MainScreenState extends State<MainScreen> {
   int _currentPage = 0;   // 현재 페이지
   int _totalPages = 1;    // 전체 페이지 수
   Timer? _timer;  // Timer 변수 추가
+
+  ItemMenu? _selectedCategory;
 
   @override
   void initState() {
@@ -168,6 +173,8 @@ class _MainScreenState extends State<MainScreen> {
               );
             },
           ),
+
+
         ],
       ),
       body: SingleChildScrollView(
@@ -201,6 +208,11 @@ class _MainScreenState extends State<MainScreen> {
                 } else {
                   List<Item> items = snapshot.data!;
 
+                  // ✅ 선택된 카테고리가 있으면 필터링
+                  if (_selectedCategory != null) {
+                    items = items.where((item) => item.category == _selectedCategory).toList();
+                  }
+
                   return Column(
                     children: [
                       GridView.builder(
@@ -217,8 +229,14 @@ class _MainScreenState extends State<MainScreen> {
                           final item = items[index];
                           return InkWell(
                             onTap: () {
-
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ItemDetailPage(item: item),
+                                ),
+                              );
                             },
+
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
@@ -233,8 +251,7 @@ class _MainScreenState extends State<MainScreen> {
 
                                       item.imageUrl.startsWith('http')
                                           ? item.imageUrl
-                                          //: 'http://10.0.2.2:8080${item.imageUrl}',
-                                          : 'http://192.168.0.37:8080${item.imageUrl}',
+                                          : 'http://10.0.2.2:8080${item.imageUrl}',
                                       width: double.infinity, // 부모 크기 맞춤
                                       height: 120,
                                       fit: BoxFit.cover,

@@ -41,6 +41,19 @@ class ItemService {
       throw Exception('Failed to load items: $e');
     }
   }
+  Future<Item> fetchItemDetail(int itemId) async {
+    final uri = Uri.parse('$baseUrl/$itemId'); // 여기에 찍어보자
+    print('📦 요청 URI: $uri');
+    final response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      final decodedBody = utf8.decode(response.bodyBytes);
+      final jsonData = json.decode(decodedBody);
+      return Item.fromJson(jsonData);
+    } else {
+      throw Exception('Failed to load item detail');
+    }
+  }
 
 
 }
